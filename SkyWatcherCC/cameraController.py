@@ -1,11 +1,11 @@
 import os
-import re
 import signal
 import subprocess
 
 # -----------------------------------------------------------------------------------
 # ---- U N I X - S H E L L ----------------------------------------------------------
 # -----------------------------------------------------------------------------------
+
 
 def find_process(process_name):
     """
@@ -45,8 +45,12 @@ def _execute_process(cmd):
         print("Error on subprocess-execution", e.output)
         return 1
 
-
+#TODO not working fine
 def restart_gphoto():
+    """
+    Kills processes of gphoto2
+    :return: True on Success
+    """
     if is_camera_present():
         kill_process(b'gvfsd-gphoto2')
         return True
@@ -54,6 +58,11 @@ def restart_gphoto():
 
 
 def kill_process(process_name):
+    """
+    Kills all processes with a given name
+    :param process_name:
+    :return:
+    """
     p = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
     out, err = p.communicate()
 
@@ -65,8 +74,11 @@ def kill_process(process_name):
             os.kill(pid, signal.SIGKILL)
 
 
-#Bus 002 Device 014: ID 04a9:32cc Canon, Inc. EOS 200D
 def is_camera_present():
+    """
+    Search for usb-device with 'Canon' in description
+    :return:
+    """
     p1 = subprocess.Popen(["lsusb"], stdout=subprocess.PIPE)
     p2 = subprocess.Popen(["grep", "Canon"], stdin=p1.stdout, stdout=subprocess.PIPE)
     p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
@@ -87,7 +99,7 @@ def start_livestream():
             subprocess.run("gphoto2 --stdout --capture-movie | ffmpeg -i - -vcodec rawvideo \
                             -pix_fmt yuv420p -threads 0 -f v4l2 /dev/video2",
                            shell=True, check=True)
-        except: #TODO check for abrout
+        except: #TODO check for canceling
             restart_gphoto()
             pass
 
@@ -97,25 +109,20 @@ def stop_livestream():
     kill_process(b'ffmpeg')
 
 
-def capture_preview(filename, iso, aperture):
-    print("Capturing Preview...", filename, iso, aperture)
-
-    return _execute_process(['gphoto2',
-                             '--set-config', 'whitebalance=8',   # Manuell
-                             '--set-config', 'aperture={}'.format(aperture),
-                             '--set-config', 'iso={}'.format(iso),
-                             '--filename', 'media/preview/{}'.format(filename),
-                             '--force-overwrite',
-                             '--capture-preview'
-                             ])
-
-# def capture_image(filename, capture_config):
-#    return capture_image(filename, capture_config.iso, capture_config.aperture,
-#                         capture_config.exposure, capture_config.image_format, capture_config.bulb_time)
-
-
 def capture_image(path, filename, iso, aperture, exposure, image_format, bulb_time=0):
+    """
+    Capture an image with the given parameter
+    :param path: full-dirname to save the image
+    :param filename: name of the imagefile
+    :param iso: /
+    :param aperture: /
+    :param exposure: INT in seconds
+    :param image_format: /
+    :param bulb_time: INT in seconds, if 0 => exposure will be used
+    :return: UNIX 0 or 1
+    """
 
+    # Build path without leading /
     imagepath = path[1:]+filename
 
     if str(bulb_time) != '0':
@@ -124,7 +131,7 @@ def capture_image(path, filename, iso, aperture, exposure, image_format, bulb_ti
     print("Capturing Image...", imagepath, iso, aperture, exposure, image_format, bulb_time)
 
     return _execute_process(['gphoto2',
-                             '--set-config', 'whitebalance=8',   # Manuell
+                             '--set-config', 'whitebalance=8',   # Manuel
                              '--set-config', 'imageformat={}'.format(image_format),
                              '--set-config', 'shutterspeed={}'.format(exposure),
                              '--set-config', 'aperture={}'.format(aperture),
@@ -136,10 +143,19 @@ def capture_image(path, filename, iso, aperture, exposure, image_format, bulb_ti
 
 
 def capture_image_bulb(imagepath, iso, aperture, bulb_time, image_format):
+    """
+    special capturing if bulb_time > 0
+    :param imagepath: full-imagepath
+    :param iso: /
+    :param aperture: /
+    :param bulb_time: INT in seconds
+    :param image_format: /
+    :return: UNIX 0 or 1
+    """
     print("Capturing Bulb-Image...", imagepath, iso, aperture, bulb_time, image_format)
 
     return _execute_process(['gphoto2',
-                             '--set-config', 'whitebalance=8',   # Manuell
+                             '--set-config', 'whitebalance=8',   # Manuel
                              '--set-config', 'imageformat={}'.format(image_format),
                              '--set-config', 'shutterspeed=bulb',
                              '--set-config', 'aperture={}'.format(aperture),
@@ -155,6 +171,7 @@ def capture_image_bulb(imagepath, iso, aperture, bulb_time, image_format):
 # -----------------------------------------------------------------------------------
 # ---- R E A D - C A M E R A - C O N F I G ------------------------------------------
 # -----------------------------------------------------------------------------------
+
 
 def get_certain_config(action):
     try:

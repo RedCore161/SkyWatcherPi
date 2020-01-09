@@ -19,6 +19,11 @@ from controller.models import ConfigMapping, ImageFile, CaptureConfig
 
 
 def start_new_thread(func):
+    """
+    wrapper-decorator to start a thread
+    :param func: function that will be started as a thread
+    :return: /
+    """
     def decorator(*args, **kwargs):
         t = Thread(target=func, args=args, kwargs=kwargs)
         t.daemon = True
@@ -33,8 +38,9 @@ def start_new_thread(func):
 def capture(request, config_id=None):
     """
     Test with: curl -X POST http://127.0.0.1:8080/api/capture
+    :param config_id: if given, reads the parameters from the given CaptureConfig, otherwise from the request
     :param request: needs iso, aperture, exposure and image_format
-    :return: Statuscode 200 or 400 (for ajax)
+    :return: statuscode 200 or 400 (for ajax)
     """
 
     config = None
@@ -76,7 +82,10 @@ def capture(request, config_id=None):
 
 @start_new_thread
 def create_thumbnail(filepath):
-
+    """
+    Creates a thumbnail as a background-task
+    :param filepath: path to the full image
+    """
     os.makedirs(THUMBNAIL_PATH, exist_ok=True)
 
     img = cv2.imread(filepath)
@@ -90,6 +99,9 @@ def create_thumbnail(filepath):
 # -----------------------------------------------------------------------------------
 
 class CaptureConfigDetail(DetailView):
+    """
+    DetailView of a given CaptureConfig
+    """
     model = CaptureConfig
 
     def get_context_data(self, **kwargs):
@@ -100,7 +112,10 @@ class CaptureConfigDetail(DetailView):
 
 
 class ConfigGalleryView(ListView):
-    model = ConfigMapping
+    """
+    ListView for all images of a given CaptureConfig
+    """
+    model = ImageFile
     context_object_name = 'images'
     template_name = 'dummies/dummy_gallery.html'
     object_list = None
@@ -111,6 +126,9 @@ class ConfigGalleryView(ListView):
 
 
 class ConfigMappingListView(ListView):
+    """
+    ListView for all connected and unconnected CaptureConfigs of a given CaptureFlow
+    """
     model = ConfigMapping
     simple_view = False
     object_list = None
@@ -133,7 +151,6 @@ class ConfigMappingListView(ListView):
             for mapping in context['object_list']:
                 ids.append(mapping.config_id)
             others = CaptureConfig.objects.exclude(pk__in=ids)
-            #print("Q-others: ", others)
 
             context['other_configs'] = others
 
@@ -141,6 +158,9 @@ class ConfigMappingListView(ListView):
 
 
 class CaptureFlowListView(ListView):
+    """
+    ListView for CaptureFlows
+    """
     model = CaptureFlow
     context_object_name = 'list_flows'
     queryset = CaptureFlow.objects.all()
@@ -148,7 +168,6 @@ class CaptureFlowListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         return context
 
 
@@ -157,6 +176,11 @@ class CaptureFlowListView(ListView):
 # -----------------------------------------------------------------------------------
 
 def create_flow(request):
+    """
+    Creates a new CaptureFlow with a given name
+    :param request: flowName
+    :return:
+    """
     flow_name = request.POST.get("flowName")
     exists = CaptureFlow.objects.filter(name=flow_name)
 
@@ -169,14 +193,25 @@ def create_flow(request):
 
 
 def delete_flow(request, pk):
+    """
+    Delete a specific flow
+    :param request: /
+    :param pk: ID of CaptureFlow
+    :return: reloads same page
+    """
     #TODO also delete mappings
-    print("Pk", pk)
     flow = CaptureFlow.objects.get(pk=pk)
     flow.delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
 def update_flow(request, pk):
+    """
+    Connects a list of ConfigCaptures with a CaptureFlow
+    :param request: configList -> a list of ConfigCapture-Ids, the order is important!
+    :param pk: ID of CaptureFlow
+    :return: statuscode 200
+    """
     config_ids = request.GET.getlist('configList[]')
 
     print("Config-List:", config_ids, " | Flow-ID:", pk)
@@ -186,7 +221,6 @@ def update_flow(request, pk):
             mapping = ConfigMapping.objects.get(flow_id=pk, config_id=config_ids[i])
             mapping.order = i
             mapping.save()
-            #print("UPDATED", config_ids[i], mapping.config_id, i)
 
         except ObjectDoesNotExist:
             mapping = ConfigMapping()
@@ -194,7 +228,6 @@ def update_flow(request, pk):
             mapping.flow_id = pk
             mapping.order = i
             mapping.save()
-            #print("CREATED:", config_ids[i], pk, i)
 
     # Delete all mappings, which are not present anymore
     ConfigMapping.objects.filter(flow_id=pk).exclude(config__in=config_ids).delete()
@@ -203,7 +236,12 @@ def update_flow(request, pk):
 
 
 def update_config_detail(request, pk):
-
+    """
+    updates the 'repeats'-value of a ConfigMapping
+    :param request: repeats, flow_id
+    :param pk: ID of CaptureConfig
+    :return:
+    """
     print("update_config_detail", pk, request.GET)
 
     repeats = request.GET.get('repeats')
@@ -221,21 +259,11 @@ def update_config_detail(request, pk):
 # ---- C O N F I G S ----------------------------------------------------------------
 # -----------------------------------------------------------------------------------
 
-#TODO OUTDATED
-def get_last_images():
-    """
-    :return: last 5 images
-    """
-    last_images = ImageFile.objects.order_by('-id')[:5]
-    image_list = []
-    for image in last_images:
-        path = image.path+image.filename
-        image_list.append(path)
-    return image_list
-
-
 def create_config(request):
-
+    """
+    creates and saves a new CaptureConfig
+    :return: form-model or HttpResponse (on POST)
+    """
     print("Create Config-Form", request.POST)
 
     if request.method == 'POST':
@@ -257,6 +285,7 @@ def create_config(request):
 
         return HttpFailed()
 
+    # If camera is present, fetch the current settings, otherwise set default values
     fetch = cc.is_camera_present()
 
     form = CaptureConfigForm().get_form(iso=cc.get_iso(fetch),

@@ -17,16 +17,18 @@ ISOS = [('100', '100'), ('200', '200'), ('400', '400'), ('800', '800'), ('1600',
 FORMAT_TYPES = [('Large Fine JPEG', 'Large Fine JPEG'), ('Large Normal JPEG', 'Large Normal JPEG'),
                 ('Medium Fine JPEG', 'Medium Fine JPEG'), ('Medium Normal JPEG', 'Medium Normal JPEG'),
                 ('Small Fine JPEG', 'Small Fine JPEG'), ('Small Normal JPEG', 'Small Normal JPEG'),
-                ('Small JPEG ', 'Kleineres JPEG'), ('RAW + Large Fine JPEG ', 'RAW + Large Fine JPEG'), ('RAW  ', 'RAW')]
+                ('Small JPEG', 'Small JPEG'), ('RAW + Large Fine JPEG ', 'RAW + Large Fine JPEG'), ('RAW  ', 'RAW')]
 
 IMAGE_TYPES = [('0', 'Preview'), ('1', 'Focus'), ('2', 'Full')]
 
-
+# Add Model-Ids to the name?
 SHOW_IDS = True
 
 
-# https://docs.djangoproject.com/en/3.0/topics/db/examples/many_to_many/
 class CaptureFlow(models.Model):
+    """
+    container to bundle a set of CaptureConfigs
+    """
     name = models.CharField(max_length=300, null=True)
 
     def __str__(self):
@@ -36,7 +38,9 @@ class CaptureFlow(models.Model):
 
 
 class CaptureConfig(models.Model):
-
+    """
+    holds most of a data to capture an image
+    """
     description = models.CharField(max_length=300, null=True)
 
     bulb_time = models.IntegerField(default=0)
@@ -56,6 +60,11 @@ class CaptureConfig(models.Model):
 
 
 class ConfigMapping(models.Model):
+    """
+    mapping table for Many-2-Many-relation between CaptureFlow and CaptureConfig
+    also saves how many iterations should be performed, and in which order it will be displayed
+    see https://docs.djangoproject.com/en/3.0/topics/db/examples/many_to_many/
+    """
     flow = models.ForeignKey(CaptureFlow, on_delete=models.CASCADE)
     config = models.ForeignKey(CaptureConfig, on_delete=models.CASCADE)
     repeats = models.IntegerField(default=1)
@@ -68,6 +77,9 @@ class ConfigMapping(models.Model):
 
 
 class ImageFile(models.Model):
+    """
+    basic image model - whenever a image is captured this on is created
+    """
     filename = models.CharField(max_length=200, null=True)
     path = models.CharField(max_length=300)
     date = models.DateTimeField(auto_now_add=True, blank=True)

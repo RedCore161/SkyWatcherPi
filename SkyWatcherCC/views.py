@@ -1,8 +1,6 @@
 from django.http import HttpResponse
 from rest_framework.utils import json
 
-# ===========================================
-
 
 class HttpSuccess(HttpResponse):
     def __init__(self, js=None, **kwargs):

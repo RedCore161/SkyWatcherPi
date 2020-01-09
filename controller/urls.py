@@ -19,12 +19,16 @@ urlpatterns = [
     url(r'^captureflow/LIST$',
         views.CaptureFlowListView.as_view(template_name='controller/list_flows.html'), name='load_simple_flows'),
     url(r'^captureflow/(?P<pk>\d+)/DETAIL',
-        views.ConfigMappingListView.as_view(template_name='controller/captureflow_detail.html', simple_view=True), name='detail_capture_flow'),
+        views.ConfigMappingListView.as_view(template_name='controller/captureflow_detail.html', simple_view=True),
+        name='detail_capture_flow'),
 
     url(r'^captureflow/SETUP$',
-        views.CaptureFlowListView.as_view(template_name='controller/setup_flows.html'), name='setup_flows'),
+        views.CaptureFlowListView.as_view(template_name='controller/setup_flows.html'),
+        name='setup_flows'),
+
     url(r'^captureflow/(?P<pk>\d+)/LOAD',
-        views.ConfigMappingListView.as_view(template_name='controller/load_capture_flow.html'), name='load_capture_flow'),
+        views.ConfigMappingListView.as_view(template_name='controller/load_capture_flow.html'),
+        name='load_capture_flow'),
 
     url(r'^captureconfig/ajax/(?P<pk>\d+)/UPDATE', views.update_config_detail, name='update_config_detail'),
     url(r'^captureconfig/ajax/(?P<pk>\d+)/GET', views.CaptureConfigDetail.as_view(), name='get_config_detail'),
