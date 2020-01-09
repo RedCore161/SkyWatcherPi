@@ -1,0 +1,134 @@
+{% block content %}
+
+    <div class="col-4 config-detail-box">
+        {% include 'dummies/dummy_panel_open.html' with title="Details" %}
+        {% if object %}
+
+            <div class="row" id="configDetail" data-id="{{ object.id }}">
+                <div class="col font-weight-bold">Description:</div>
+                <div class="col">{{ object.description }}</div>
+            </div>
+
+            <div class="row" id="exposureDetail" data-href="{% if object.bulb_time > 0 %}{{ object.bulb_time }}{% else %}{{ object.exposure }}{% endif %}">
+                <div class="col font-weight-bold">Exposure:</div>
+                {% if object.bulb_time > 0 %}
+                    <div class="col">{{ object.bulb_time }}s (bulb)</div>
+                {% else %}
+                    <div class="col">{{ object.exposure }}s</div>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                <div class="col font-weight-bold">Aperture:</div>
+                <div class="col">{{ object.aperture }}</div>
+            </div>
+
+            <div class="row">
+                <div class="col font-weight-bold">Iso:</div>
+                <div class="col">{{ object.iso }}</div>
+            </div>
+
+            <div class="row">
+                <div class="col font-weight-bold">Format:</div>
+                <div class="col">{{ object.image_format }}</div>
+            </div>
+            <div class="row" id="repeatsDetail" data-href="{{ repeats }}">
+                <div class="col font-weight-bold">Repeats:</div>
+                <div class="col">{{ repeats }}</div>
+            </div>
+
+        {% else %}
+            <p>There is no capture-config!</p>
+        {% endif %}
+        {% include 'dummies/dummy_panel_close.html' %}
+    </div>
+
+    <div class="col-3">
+        {% include 'dummies/dummy_panel_open.html' with title="Actions" %}
+            <div class="customBtnHolder">
+                <button class="btn btn-block btn-lg btn-primary customCaptureBtn" id="btnSingle"><span class="glyphicon glyphicon-check"></span>SINGLE</button>
+                <button class="btn btn-block btn-lg btn-success customCaptureBtn" id="btnStart"><span class="glyphicon glyphicon-check"></span>START</button>
+                <button class="btn btn-block btn-lg btn-danger customCaptureBtn disabled" id="btnCancel"><span class="glyphicon glyphicon-ban-circle"></span> CANCEL</button>
+            </div>
+		{% include 'dummies/dummy_panel_close.html' %}
+    </div>
+
+    <div class="col-3">
+        {% include 'dummies/dummy_panel_open.html' with title="DUMMY" %}
+
+         || DUMMY ||
+
+        {% include 'dummies/dummy_panel_close.html' %}
+
+    </div>
+
+
+	{% block javascript %}
+
+    <script language="JavaScript">
+
+        function getDurration() {
+            var durr = $('#exposureDetail').data('href');
+            return durr * 1000;
+        }
+
+        function getRepeats() {
+            return $('#repeatsDetail').data('href');
+        }
+
+        function captureImage(durration, repeats) {
+            var runCounter = 0;
+            var configId = $('.list-group-item.active').data('id');
+			if (configId != undefined) {
+			    var url = "{% url 'capture_image_with_config' config_id=0 %}".replace('0', configId);
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    beforeSend : function (data) {
+                        startAnimation(durration, repeats);
+                    },
+                    success: function (data) {
+                        if (durration > MIN_DURRATION) {
+                            showSuccess("Successfully captured Image");
+                        }
+                        updateRepeatInfo();
+                        if (!isConfigDone()){
+                            captureImage(durration, repeats);
+                        }
+                    },
+                    error: function () {
+                        showError("Error on capturing Image!");
+                        cancelProgress();
+                    }
+                });
+			}
+        }
+
+		$(function() {
+
+			$('#btnSingle').click(function(){
+				captureImage(getDurration(), 1);
+			});
+
+			$('#btnStart').click(function(){
+			    captureImage(getDurration(), getRepeats());
+			});
+
+			$('#btnCancel').click(function(){
+				var configId = $('.list-group-item.active').data('id');
+				if (configId != undefined) {
+				}
+				console.log("btnCancel");
+			});
+
+		});
+
+    </script>
+
+	{% endblock %}
+
+
+{% endblock %}

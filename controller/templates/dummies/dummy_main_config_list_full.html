@@ -1,0 +1,9 @@
+<div class="list-group-item highlight config-selected row">
+    <div data-url="{% url 'load_capture_flow' pk=flow.id %}" class="load-set">{{ flow }}</div>
+
+	<span class="config-selected-element glyphicon glyphicon-align-right glyphicon-trash"
+		data-href="{% url 'delete_flow' pk=flow.id %}" data-name="{{ flow }}"
+		data-toggle="modal"
+		data-target="#confirm-delete">[ X ]
+    </span>
+</div>

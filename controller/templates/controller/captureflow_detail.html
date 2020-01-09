@@ -1,0 +1,106 @@
+{% extends 'body.html' %}
+{% load static %}
+{% block content %}
+
+    <div class="container-fluid">
+	  <div class="row">
+		  <div class="col">
+			  <h4>
+				  <a href="{% url 'load_simple_flows' %}" data-id="{{ flow_id }}" class="nounderline">&lt; BACK</a>
+			  </h4>
+		  </div>
+	  </div>
+	  <div class="row">
+		<div class="col-3" id="containerMappingList">
+			{% include 'dummies/dummy_panel_open.html' with title="Linked Configs" %}
+				<div class="list-group overflow-auto scrollable">
+					{% for m in object_list %}
+						{% include "dummies/dummy_main_config_list.html" with txt=m.config configId=m.config.id %}
+					{% endfor %}
+				</div>
+			{% include 'dummies/dummy_panel_close.html' %}
+		</div>
+
+		<div class="col-9" id="containerControlls" style="display:none;">
+			<div id="configStatusContainer">
+				{% include 'dummies/dummy_progressbar.html' %}
+			</div>
+
+			<div id="configModificationContainer" class="row">
+				<!-- CAPTURE-CONFIGS WILL BE LOADED & ADDED BY AJAX - SEE BELOW -->
+            </div>
+
+			{% include 'dummies/dummy_panel_open.html' with title="Gallery" %}
+                <div class="row justify-content-center" id="galleryContainer">
+					<div class="gallery" style="padding-top: 25px;">
+						<!-- IMAGES WILL BE LOADED & ADDED BY AJAX - SEE BELOW -->
+					</div>
+                </div>
+			{% include 'dummies/dummy_panel_close.html' %}
+		</div>
+	  </div>
+	</div>
+
+	{% block javascript %}
+    <script language="JavaScript">
+
+        function loadStatusContainer(configId) {
+        	console.log("loadStatusContainer: "+configId);
+
+            $("#containerControlls").show();
+
+			$.ajax({
+                type: "GET",
+                url: "{% url 'get_config_detail' pk=0 %}".replace('0', configId) + "?flow_id={{ flow_id }}",
+                data: {
+                	'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(result){
+					$("#configModificationContainer").empty().append(result);
+		        },
+				error: function () {
+                	console.error("loadStatusContainer");
+                }
+            });
+        }
+
+        function loadGalleryWithConfig(configId) {
+            console.log("loadGalleryWithConfig: "+configId);
+
+            $.ajax({
+                type: "GET",
+                url: "{% url 'load_gallery' pk=0 %}".replace('0', configId),
+                data: { 'csrfmiddlewaretoken': '{{ csrf_token }}' },
+                success: function(result){
+                    $(".gallery").empty().append(result);
+
+					// See: https://simplelightbox.com/
+					if ($(".gallery .row").length > 0 ) {
+						var $gallery = $('.gallery a').simpleLightbox();
+					}
+		        },
+				error: function () {
+                	console.error("loadGalleryWithConfig");
+                }
+            });
+        }
+
+        //============================================================
+
+        $(function() {
+
+			$('.list-group-item').click(function(){
+				var configId = $(this).attr('data-id');
+				$(this).tab('show'); 						// Highlight selected one
+
+				loadStatusContainer(configId);
+				if(MAX_UI_MODE) {
+					loadGalleryWithConfig(configId);
+				}
+			});
+		});
+
+    </script>
+	{% endblock %}
+
+{% endblock %}

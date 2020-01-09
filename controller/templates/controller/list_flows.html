@@ -1,0 +1,28 @@
+{% extends 'body.html' %}
+{% load static %}
+{% block content %}
+
+    <div class="col">
+		{% include 'dummies/dummy_panel_open.html' with title="Flows" %}
+			{% if list_flows %}
+				{% csrf_token %}
+
+				<div class="list-group">
+					{% for flow in list_flows %}
+						<a href="{% url 'detail_capture_flow' pk=flow.id %}">
+							<span class="list-group-item list-group-item-action block">
+								<span class="overlay">{{ flow }}</span>
+							</span>
+						</a>
+					{% endfor %}
+				</div>
+
+			{% else %}
+				<p>There are no flows in the database!</p>
+			{% endif %}
+
+		{% include 'dummies/dummy_panel_close.html' %}
+	</div>
+
+{% endblock %}
+

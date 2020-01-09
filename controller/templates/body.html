@@ -1,0 +1,70 @@
+{% load static %}
+<html lang="en">
+    <head>
+        <title>Score Helper</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet" type='text/css'>
+        <link href="{% static 'css/custom.css' %}" rel="stylesheet" type='text/css'>
+        <link href="{% static 'css/simplelightbox.css' %}" rel="stylesheet" type='text/css'>
+
+
+        <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
+        <script src="{% static 'js/jquery-ui.js' %}"></script>
+        <script src="{% static 'js/jquery.form.min.js' %}"></script>
+        <script src="{% static 'js/bootstrap.bundle.js' %}"></script>
+        <script src="{% static 'js/bootstrap-notify.js' %}"></script>
+
+        <script src="{% static 'js/Sortable.min.js' %}"></script>
+        <script src="{% static 'js/simplelightbox.min.js' %}"></script>
+        <script src="{% static 'js/custom.js' %}"></script>
+
+        <script type="text/javascript">
+
+            function restart_gphoto() {
+                $.ajax({
+                    url: "{% url 'restart_gphoto' %}",
+                    type: 'GET',
+                    success: function (data) {
+                        showSuccess("Successfully restarted gphoto!")
+                    },
+
+                    error: function () {
+                        showError("Error on restarting gphoto!")
+                    }
+                });
+            }
+
+            $(function() {
+                $('.customBtnNavi').click(function(e) {
+                    if (!$(this).hasClass('disabled')) {
+                        e.preventDefault();
+                        window.location.href = $(this).data("href");
+                    }
+                });
+            });
+
+        </script>
+
+    </head>
+    <body>
+        <div class="container-fluid" style="margin-top: 25px;">
+            <div class="row content">
+                <div class="col-2 sidenav">
+                    {% include 'dummies/dummy_panel_open.html' with title="Navigation" %}
+                    <button class="btn btn-block btn-lg btn-primary customBtnNavi" data-href="{% url 'live_stream' %}">LIVE-VIEW</button>
+                    <button class="btn btn-block btn-lg btn-primary customBtnNavi" data-href="{% url 'create_config' %}">CREATE CONFIG</button>
+                    <button class="btn btn-block btn-lg btn-success customBtnNavi" data-href="{% url 'setup_flows' %}">SETUP-FLOWS</button>
+                    <button class="btn btn-block btn-lg btn-success customBtnNavi" data-href="{% url 'load_simple_flows' %}">RUN FLOWS</button>
+                    <button class="btn btn-block btn-lg btn-danger" onclick="restart_gphoto()">RESTART GPHOTO</button>
+                    {% include 'dummies/dummy_panel_close.html' %}
+                </div>
+                <div class="col-10">
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

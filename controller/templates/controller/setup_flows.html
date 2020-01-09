@@ -1,0 +1,103 @@
+{% extends 'body.html' %}
+{% load static %}
+{% block content %}
+
+    <div class="container-fluid">
+
+		{% include 'dummies/dummy_dialog_model.html' %}
+
+		<div class="row">
+			<div class="col-3">
+				{% include 'dummies/dummy_panel_open.html' with title="FLOWS" %}
+
+					<input type="text" id="flowName" />
+					<button class="btn btn-lg" onclick="createFlow()">Add</button>
+					{% if list_flows %}
+						{% csrf_token %}
+						<div class="list-group overflow-auto scrollable">
+							{% for flow in list_flows %}
+								{% include 'dummies/dummy_main_config_list_full.html' with flow=flow %}
+							{% endfor %}
+						</div>
+						<br />
+					{% else %}
+						<p>There are no list_flows in the library.</p>
+					{% endif %}
+				{% include 'dummies/dummy_panel_close.html' %}
+			</div>
+			<div class="col-8">
+                <div class="container">
+                    <div class="row" id="childConfigContainer">
+						<!-- CONNECTED CAPTURE-CONFIGS WILL BE LOADED & ADDED BY AJAX - SEE BELOW -->
+                    </div>
+                    <div class="row justify-content-center" id="galleryContainer" style="display:none;">
+						<div class="gallery" style="padding-top: 25px;">
+							<!-- IMAGES WILL BE LOADED & ADDED BY AJAX - SEE BELOW -->
+							<a href="ACAB"><img src="1312" style="visibility: hidden;"></a><div class="clear"></div>
+						</div>
+                    </div>
+                </div>
+            </div>
+
+	  	</div>
+		<!-- end row -->
+	</div>
+
+	{% block javascript %}
+
+    <script language="JavaScript">
+
+		function createFlow() {
+			var name = $("#flowName").val();
+			if (name.length > 0) {
+			  $.ajax({
+				type: "POST",
+				url: "{% url 'create_flow' %}",
+				data: {
+                   'flowName': name,
+                   'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+				success: function(result){
+					location.reload();
+				}
+			  });
+			}
+		}
+
+		/*	Loads the selected flow */
+		$('.load-set').click(function(){
+
+			$(this).parent().tab('show'); 			// Highlight selected one
+
+			$.ajax({
+				type: "POST",
+				url: $(this).data('url'),
+				data: {
+					'csrfmiddlewaretoken': '{{ csrf_token }}'
+				},
+
+				success: function(result){
+					// Clear current data and add new
+					$("#containerMappingList").remove();
+					$("#containerOptions").remove();
+
+        			$("#childConfigContainer").empty();
+        			$("#childConfigContainer").append(result);
+				}
+			});
+		});
+
+		/*	Opens delete confirmation dialog */
+		$('#confirm-delete').on('show.bs.modal', function(e) {
+
+            $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+            $('.content-info').html('Flow-Name: <strong>' + $(e.relatedTarget).data('name') + '</strong>');
+
+        });
+
+    </script>
+
+	{% endblock %}
+
+{% endblock %}
+

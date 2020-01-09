@@ -1,0 +1,69 @@
+{% extends 'body.html' %}
+{% load static %}
+
+{% block content %}
+
+    {% include 'dummies/dummy_panel_open.html' with title="Live-Stream" %}
+        <div id="streamViewholder"></div>
+	{% include 'dummies/dummy_panel_close.html' %}
+
+    <script>
+
+        window.onload = function(e) {
+            startLiveStream();
+        }
+
+        window.onunload = function(e){
+            console.log("stopLiveStream()");
+            stopLiveStream()
+            return false;
+        };
+
+        function startLiveStream() {
+           console.log("Start Liveview");
+           $.ajax({
+
+                url: "{% url 'start_stream' %}",
+                type: 'GET',
+                data: {
+					'csrfmiddlewaretoken': '{{ csrf_token }}'
+				},
+                success: function (data) {
+                    console.log("Requested Liveview!");
+                    setTimeout(addLiveStream, 2500);
+                },
+
+                error: function () {
+                    console.error("Error on starting Liveview!");
+                }
+
+            });
+
+        }
+
+        function addLiveStream(){
+            var image = new Image();
+            image.src="{% url 'stream_frame' %}";
+            image.alt="Couldn\'t load LiveStream!";
+            $("#streamViewholder").empty();
+            $("#streamViewholder").append(image);
+        }
+
+
+        function stopLiveStream() {
+           $.ajax({
+              url: "{% url 'stop_stream' %}",
+              type: 'GET',
+              data: {
+			    'csrfmiddlewaretoken': '{{ csrf_token }}'
+			  },
+              error: function () {
+                console.error("Error on destroy LiveStream!", "{% url 'stop_stream' %}");
+              }
+            });
+        }
+
+    </script>
+
+
+{% endblock %}

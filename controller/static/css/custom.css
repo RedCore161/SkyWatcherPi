@@ -1,0 +1,265 @@
+/* Set height of the grid so .sidenav can be 100% (adjust if needed) */
+
+/* Set gray background color and 100% height
+.sidenav {
+  background-color: #2e2d2b;
+  height: 100%;
+}
+*/
+
+
+/* Set black background color, white text and some padding */
+footer {
+  background-color: #555;
+  color: white;
+  padding: 15px;
+}
+
+/* On small screens, set height to 'auto' for sidenav and grid */
+@media screen and (max-width: 767px) {
+  .sidenav {
+    height: auto;
+    padding: 25px 5px 15px 15px;
+  }
+
+  .row.content {
+    height: auto;
+    padding-top: 10px;
+  }
+}
+
+input[type="radio2"] {
+  -ms-transform: scale(2.5); /* IE 9 */
+  -webkit-transform: scale(2.5); /* Chrome, Safari, Opera */
+  transform: scale(2.5);
+  margin-left: 15px;
+}
+/*
+  display: inline-block;
+
+
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+*/
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 100%;
+  vertical-align: baseline;
+  border: 0;
+  outline: 0;
+  color: #fff;
+}
+
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+textarea {
+  overflow: auto;
+  vertical-align: top;
+  resize: none;
+}
+
+[placeholder]::-webkit-input-placeholder { color: rgba(255,255,255,.8); }
+[placeholder]:hover::-webkit-input-placeholder { color: rgba(255,255,255,.4); }
+[placeholder]:focus::-webkit-input-placeholder { color: transparent; }
+
+[placeholder]::-moz-placeholder { color: rgba(255,255,255,.8); }
+[placeholder]:hover::-moz-placeholder { color: rgba(255,255,255,.4); }
+[placeholder]:focus::-moz-placeholder { color: transparent; }
+
+[placeholder]:-ms-input-placeholder { color: rgba(255,255,255,.8); }
+[placeholder]:hover:-ms-input-placeholder { color: rgba(255,255,255,.4); }
+[placeholder]:focus:-ms-input-placeholder { color: transparent; }
+
+
+input {
+  margin: 0 0 20px;
+  padding: 8px 12px 10px 12px;
+  border: 1px solid rgba(0,0,0,.5);
+  background: rgba(46, 45, 43,1);
+}
+
+select, input.input-left-100 {
+  position:absolute;
+  left: 140px;
+  margin: 0 15 10px;
+  padding: 8px 12px 10px 12px;
+  border: 1px solid rgba(255, 255, 255, .5);
+  background: rgba(46, 45, 43, 1);
+}
+
+option {
+    margin: 40px;
+    background: rgba(46, 45, 43,1);
+    color: red;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+textarea {
+  display: block;
+  width: 400px;
+  height: 150px;
+  margin: 0 0 20px;
+  padding: 8px 12px 10px 12px;
+  border: 1px solid rgba(0,0,0,.5);
+  background: rgba(0,0,0,.25);
+}
+
+button {
+  margin: 0 0 20px;
+  padding: 8px 10px 10px 10px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, .5);
+  background: rgba(46, 45, 43, 1);
+}
+
+
+
+.block {
+  position:relative;
+}
+
+.block .overlay {
+  width: 90%;
+  display: inline-block;
+}
+
+
+.connectedSortable {
+    min-height: 370px;
+}
+
+#sortableOptions li, {
+    margin: 0 5px 5px 5px;
+    padding: 5px;
+    font-size: 1.2em;
+}
+
+div.scrollable {
+    border: 0px;
+    padding: 10px 0px 10px 0px;
+    //margin:4px, 4px;
+    height: 290px;
+    max-height: 300px;
+    overflow:scroll;
+    -webkit-overflow-scrolling: touch;
+}
+
+.custom-thumbnail {
+    width: 300px;
+    height: 200px;
+}
+
+a.nounderline {
+    text-decoration: none !important;
+    color: #555;
+}
+
+div.config-detail-box {
+    font-size: large;
+    line-height: 30px;
+}
+
+#dummyRepeats {
+    color:#fff;
+    background-color:#222;
+}
+
+.config-selected {
+    padding: 10px 20px 10px 20px;
+}
+
+.config-selected-element {
+    position: absolute;
+    top: 5px;
+    right: 0px;
+    width: 75px;
+    text-align: center;
+}
+
+#alertsContainer{
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 50%;
+    z-index: 10;
+}
+
+.customNotifyContainer{
+    display: inline-block;
+    margin: 0px auto;
+    position: fixed;
+    transition: all 0.5s ease-in-out 0s;
+    z-index: 1031;
+    top: 20px;
+    right: 20px;
+    animation-iteration-count: 1;
+}
+
+customCloseNotify.{
+    position: absolute;
+    right: 10px;
+    top: 5px;
+    z-index: 10312;
+}
+
+#carouselControls{
+    min-height: 250px;
+    border: 1px solid rgba(206,206,206,.5);
+}
+
+
+img.d-block {
+    line-height: 17;
+    text-align: center;
+}
+
+.customBtnHolder {
+    padding: 10px 15px 0px 15px;
+}
+
+.navbar-brand:before {
+    color: #ccc;
+}
+
+.navbar-brand {
+    color: white;
+}
+
+.panel-default {
+    border: 1px solid rgba(206,206,206,.5);
+    background-color: #2e2d2b;
+    padding: 0px;
+    margin: 15px 0px 0px 0px;
+    height: min-content;
+    min-width: 250px !important;
+}
+
+.panel-heading {
+    font-size: 20px;
+    background-color: #4d4d4d;
+    padding: 5px 10px 5px 10px;
+    border-bottom: 1px solid rgba(206,206,206,.5);
+}
+
+.panel-body {
+    padding: 15px;
+}
+
+.list-group-item {
+    margin: 2px;
+    border: 1px solid rgba(206,206,206,.5) !important;
+}

@@ -1,0 +1,22 @@
+{% load static %}
+
+{% block body %}
+	{% if images %}
+        <div class="row">
+        {% for img in images %}
+
+            <a title="{{ img.date}}" href="{{ img.path }}{{ img.filename}}">
+                <img class="img-thumbnail custom-thumbnail" src="/media/thumbnails/thumb_{{ img.filename }}" alt="{{ img.date }}">
+            </a>
+            <div class="clear"></div>
+            {% if forloop.counter|divisibleby:3 %}
+                </div><div class="row">
+            {% endif %}
+
+        {% endfor %}
+        </div>
+	{% else %}
+		<p>No images available for this config!</p>
+	{% endif %}
+
+{% endblock %}

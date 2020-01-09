@@ -1,0 +1,124 @@
+{% extends 'body.html' %}
+{% load static %}
+{% block content %}
+
+    <div class="container-fluid">
+	  <div class="row">
+		<div class="col-3" id="createConfigContainer">
+			{% include 'dummies/dummy_panel_open.html' with title="Config" %}
+			<form id="formCreateConfig" method="POST">
+				{% csrf_token %}
+				{{ form.as_p }}
+			</form>
+			<br/>
+			<button id="captureImage" class="btn btn-block btn-lg btn-primary">TEST</button>
+			<button class="btn btn-block btn-lg btn-primary" id="btnCreateConfig">CREATE</button>
+			{% include 'dummies/dummy_panel_close.html' %}
+	     </div>
+		 <div class="col-8" id="previewContainer" style="display: none;">
+			{% include 'dummies/dummy_panel_open.html' with title="Preview" %}
+				<div id="carouselControls" class="carousel slide" data-ride="carousel" style="visibility: hidden;">
+				  <div class="carousel-inner"></div>
+				  <a class="carousel-control-prev" href="#carouselControls" role="button" data-slide="prev">
+					<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+					<span class="sr-only">Previous</span>
+				  </a>
+				  <a class="carousel-control-next" href="#carouselControls" role="button" data-slide="next">
+					<span class="carousel-control-next-icon" aria-hidden="true"></span>
+					<span class="sr-only">Next</span>
+				  </a>
+				</div>
+			{% include 'dummies/dummy_panel_close.html' %}
+		 </div>
+	  </div>
+	</div>
+
+    <script type="text/javascript">
+
+        $(function() {
+
+			//INIT IMAGE-GALLERY
+			//============================================================
+
+			// See: https://getbootstrap.com/docs/4.0/components/carousel/
+			$('.carousel').carousel({
+			  interval: false
+			});
+
+
+            // CREATE CONFIG
+            //============================================================
+            // See: https://github.com/jquery-form/form
+
+
+            $('#btnCreateConfig').click(function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: "{% url 'create_config' %}",
+                    method: 'POST',
+                    data: $('#formCreateConfig').serialize(),
+        			dataType  : "json",
+                    success: function (data) {
+                        $('#formCreateConfig').resetForm();
+                        showSuccess("Config has been saved!");
+                    },
+                    error: function () {
+                        showError("Config is not complete!");
+                    }
+                });
+            });
+
+
+            // CAPTURING IMAGES
+            //============================================================
+            $( "#captureImage" ).click(function() {
+                $.ajax({
+
+                    url: "{% url 'capture_image' %}",
+                    method: 'POST',
+                    data: $('#formCreateConfig').serialize(),
+        			dataType  : "json",
+                    success: function (data) {
+                        showSuccess("Full-Image has been captured!");
+                        loadImageIntoCarousel(data["filepath"]);
+                    },
+                    error: function () {
+                        showError("Full-Image failed!");
+                    }
+
+                });
+            });
+
+
+            // IMAGE LOADING
+            //============================================================
+
+            function loadImageIntoCarousel(imagepath) {
+                if (MAX_UI_MODE) {
+
+                    $('#previewContainer').show();
+
+                    var $dummy = $('{% include "dummies/dummy_image.html" %}');
+
+                    var n = imagepath.lastIndexOf('/');
+                    var filename = imagepath.substring(n + 1);
+
+                    console.log("Load Image: ", imagepath);
+
+                    $('.carousel-inner .carousel-item').removeClass("active");
+                    $dummy.addClass("active");
+                    $dummy.find(".d-block").attr("src", imagepath);
+                    $dummy.find("#imagename").html(filename);
+
+                    $('#carouselControls').css('visibility','visible');
+                    $('.carousel-inner').append( $dummy );
+                }
+            }
+
+        });
+
+
+    </script>
+
+{% endblock %}
+

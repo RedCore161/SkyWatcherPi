@@ -1,0 +1,132 @@
+{% include 'dummies/dummy_panel_open.html' with title="Progress" %}
+<div class="row">
+	<div class="col-2" id="configStatus"></div>
+		<div class="col-9">
+			<div class="progress" id="configProgress" style="height: 20px; width: 100%;">
+				<div class="progress-bar bg-danger" role="progressbar" aria-valuenow="0"
+                     aria-valuemin="0" aria-valuemax="100"></div>
+			</div>
+		</div>
+	<div class="col-1" data-offset="0" id="repeatCounter"></div>
+</div>
+
+{% block javascript %}
+    <script language="JavaScript">
+
+		var animation = Object();
+
+        const MIN_DURRATION = 1000;
+
+		const states = {
+		  READY: 0,
+		  RUNNING: 1,
+		  DONE: 2
+		};
+
+		function startAnimation(durration, repeats) {
+		    console.log("startAnimation: "+durration + " | "+repeats);
+
+			if (durration > MIN_DURRATION) {
+                animation.waiter = setTimeout(function(){
+                    disableAllLinks();
+                    $('.customCaptureBtn').toggleClass("disabled");
+
+                    var now = new Date();
+                    animation.endTime = now.getTime() + durration;
+                    animation.durration = durration;
+                    animation.repeats = repeats;
+
+                    setProgressStatus(states['RUNNING']);
+
+                    animateUpdate();
+
+                }, 500);
+			} else {
+			    animation.waiter = setTimeout(function(){
+                    setProgressStatus(states['RUNNING']);
+                }, 500);
+			}
+		}
+
+		function cancelProgress() {
+		    clearTimeout(animation.waiter);
+		    animation = Object();
+		}
+
+		function isConfigDone() {
+			return animation.current >= animation.repeats;
+		}
+
+		function resetAnimation() {
+
+			//Reset everything
+			animation = Object();
+
+            enableAllLinks();
+
+            $('.customCaptureBtn').toggleClass("disabled");//TODO will break!!!
+            $('#repeatCounter').empty();
+			setProgressStatus(states['READY']);
+
+			updateProgress(0);
+
+		}
+
+		function onProgressDone() {
+			setProgressStatus(states['DONE']);
+			updateProgress(100)
+			setTimeout(resetAnimation, 1000);
+		}
+
+		function setProgressStatus(status) {
+			switch (status) {
+				case states['READY']:
+					$('#configStatus').text("Status: READY");
+					break;
+
+			  	case states['RUNNING']:
+					$('#configStatus').text("Status: RUNNING");
+					break;
+
+			  	case states['DONE']:
+					$('#configStatus').text("Status: DONE");
+					break;
+			}
+		}
+
+        function updateRepeatInfo() {
+            var current = $('#repeatCounter').data('offset');
+            current++;
+            $('#repeatCounter').data('offset', current);
+            $('#repeatCounter').text(current+" / "+animation.repeats);
+        }
+
+		function updateProgress(progress) {
+			$('.progress-bar').css("width", progress + "%");
+			$('.progress-bar').text(Math.round(progress) + "%");
+		}
+
+		function animateUpdate() {
+			var now = new Date();
+			var timeLeft = animation.endTime - now.getTime() ;
+			var progress = ((animation.durration - timeLeft) / animation.durration) * 100;
+
+			if (progress <= 100) {
+				updateProgress(progress);
+				setTimeout(animateUpdate, 100);
+			} else {
+				onProgressDone();
+			}
+		}
+
+		//============================================================
+
+		setProgressStatus(states['READY']);
+
+
+
+    </script>
+	{% endblock %}
+
+
+{% include 'dummies/dummy_panel_close.html' %}

@@ -1,0 +1,160 @@
+{% load static %}
+
+<div class="col" id="containerMappingList">
+	{% include 'dummies/dummy_panel_open.html' with title="Linked Configs" %}
+		<div class="overflow-auto scrollable">
+			<div class="connectedSortable" id="configsMainList"></div>
+		</div>
+	{% include 'dummies/dummy_panel_close.html' %}
+</div>
+
+<div class="col" id="containerOptions">
+	{% include 'dummies/dummy_panel_open.html' with title="Available Configs" %}
+		<div class="overflow-auto scrollable">
+			<div class="connectedSortable" id="sortableOptions"></ul>
+		</div>
+	{% include 'dummies/dummy_panel_close.html' %}
+</div>
+
+
+{% block javascript %}
+    <script language="JavaScript">
+
+
+        //SORTABLE LISTS
+        //============================================================
+
+		$( "#configsMainList" ).sortable({
+		  	connectWith: ".connectedSortable",
+         	update: function(event, ui) {
+
+				var item = ui.item;
+			    var configList = [];
+
+				switch (item.parent().attr('id')) {
+					case "configsMainList":
+						item.addClass('config-selected');
+						item.find(':input').show();
+						break;
+
+					case "sortableOptions":
+						item.removeClass('config-selected');
+						item.find(':input').hide();
+						break;
+				}
+
+			    $(".config-selected").each(function() {
+				  var configId = $(this).data('id');
+				  if (typeof configId !== 'undefined') {
+					configList.push(configId);
+				  }
+			    });
+
+
+				//Perform update of the order and elements
+	  		    console.log("Current Config-Item-Ids: "+configList);
+			    $.ajax({
+					url: "{% url 'update_flow' pk=flow_id %}",
+					type: "GET",
+					data: {
+					  'configList': configList
+					},
+					dataType: 'json'
+			    });
+			}
+		});
+
+
+		$( "#sortableOptions" ).sortable({
+			connectWith: ".connectedSortable"
+		}).disableSelection();
+
+
+
+		function addElementToList(parent, pos, txt, configId, repeats, isMainListElement) {
+
+			var $dummy = $('{% include "dummies/dummy_config_list.html" %}');
+
+			$dummy.attr('data-id', configId);
+			$dummy.find('#dummyConfigName').append(txt);
+			$dummy.find(':input').val(repeats);
+
+			$dummy.find(':input').click(function(){
+				return false;
+			});
+
+			//SAVES THE VALUE AS REPEAT-COUNT VIA AJAX
+			$dummy.find(':input').change(function() {
+				console.log("OnChange()");
+				var $d = $(this);
+				var url = "{% url 'update_config_detail' pk=0 %}".replace('0', configId);
+				$.ajax({
+					type: "GET",
+					url: url,
+					data: {
+						'csrfmiddlewaretoken': '{{ csrf_token }}',
+						'repeats': $d.val(),
+						'flow_id': {{ flow_id }}
+					},
+					success: function(result){
+						console.log("Successfully changed!");
+					},
+					error: function () {
+						console.error("Error on change");
+					}
+				});
+			});
+
+			$dummy.click(function() {
+				if(MAX_UI_MODE) {
+					loadGalleryWithConfig(configId)
+				}
+			});
+
+			if (!isMainListElement) {
+				$dummy.find(':input').hide();
+				$dummy.removeClass('config-selected');
+			}
+
+			parent.append($dummy);
+
+        }
+
+        function loadGalleryWithConfig(configId) {
+            console.log("loadGalleryWithConfig: "+configId);
+
+            $("#galleryContainer").show();
+
+    		var url = "{% url 'load_gallery' pk=0 %}".replace('0', configId);
+            $.ajax({
+                type: "GET",
+                url: url,
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+
+                success: function(result){
+                    $(".gallery").empty().append(result);
+
+					// See: https://simplelightbox.com/
+					if ($(".gallery .row").length > 0 ) {
+						var $gallery = $('.gallery a').simpleLightbox();
+					}
+		        }
+            });
+        }
+
+
+        {% for m in object_list %}
+			addElementToList($("#configsMainList"), {{ forloop.counter }}, "{{ m.config }}", "{{ m.config.id }}", "{{ m.repeats }}", true );
+		{% endfor %}
+
+
+		{% for cc in other_configs %}
+			addElementToList($("#sortableOptions"), {{ forloop.counter }}, "{{ cc }}", "{{ cc.id }}", 1, false );
+		{% endfor %}
+
+
+    </script>
+{% endblock %}
+
