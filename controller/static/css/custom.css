@@ -263,3 +263,16 @@ img.d-block {
     margin: 2px;
     border: 1px solid rgba(206,206,206,.5) !important;
 }
+
+
+#streamViewholder {
+    overflow: hidden;
+    position: relative;
+    width: 960px;
+    height: 480px;
+}
+
+#focusFrame {
+    position: absolute;
+    border: beige 1px solid;
+}

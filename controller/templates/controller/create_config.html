@@ -57,12 +57,12 @@
                     url: "{% url 'create_config' %}",
                     method: 'POST',
                     data: $('#formCreateConfig').serialize(),
-        			dataType  : "json",
+        			dataType: "json",
                     success: function (data) {
                         $('#formCreateConfig').resetForm();
                         showSuccess("Config has been saved!");
                     },
-                    error: function () {
+                    error: function() {
                         showError("Config is not complete!");
                     }
                 });

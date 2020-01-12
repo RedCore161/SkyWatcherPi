@@ -118,6 +118,7 @@ create_config=`printf '{
         "PASSWORD": "'${SQL_PWD}'",
 	"HOSTS": ["127.0.0.1", "'${HOST_IP}'"],
 	"SECRETKEY": "'${SECRETKEY}'",
+	"MOCK_CAMERA": true,
 	"DEBUG": true
 }' > /var/www/skywatcher_config.json`
 run_cmd ${create_config}

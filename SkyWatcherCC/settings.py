@@ -31,6 +31,8 @@ DEBUG = CONFIG["DEBUG"]
 
 ALLOWED_HOSTS = CONFIG["HOSTS"]
 
+#MOCK_CAMERA = CONFIG["MOCK_CAMERA"]
+MOCK_CAMERA = False
 
 # Application definition
 

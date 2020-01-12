@@ -12,7 +12,7 @@ from django.views.generic import DetailView
 from django.views.generic.list import ListView
 
 import SkyWatcherCC.cameraController as cc
-from SkyWatcherCC.settings import FULL_CAPUTRING_PATH, THUMBNAIL_PATH
+from SkyWatcherCC.settings import FULL_CAPUTRING_PATH, THUMBNAIL_PATH, MOCK_CAMERA
 from SkyWatcherCC.views import HttpSuccess, HttpFailed
 from controller.forms import CaptureConfigForm, CaptureFlow
 from controller.models import ConfigMapping, ImageFile, CaptureConfig
@@ -312,19 +312,40 @@ def restart_gphoto(request):
 # -----------------------------------------------------------------------------------
 
 @start_new_thread
-def start_as_thread():
-    cc.start_livestream()
+def start_as_thread(filename="", crop=""):
+    cc.start_livestream(filename, crop)
 
 
 def start_stream(request):
-    if cc.is_camera_present():
-        start_as_thread()
-        return HttpSuccess()
+    """
+    This will start a new video-stream
+    :param request: record => if set, the video will be captured to the filesystem
+                    crop   => if set, the video will be captured as FULL quality,
+                              otherwise in MPEG
+    :return:
+    """
+    if MOCK_CAMERA or cc.is_camera_present():
+        crop = request.GET.get('crop')
+        record = request.GET.get('record')
+        filename = ""
+        print("start_stream", crop, record)
+
+        if record:
+            cc.stop_livestream()
+            if crop:
+                filename = "{0}/stream_{1:%Y-%m-%d_%H-%M-%S}.mkv".format(
+                    FULL_CAPUTRING_PATH[1:], datetime.datetime.now())
+            else:
+                filename = "{0}/stream_{1:%Y-%m-%d_%H-%M-%S}.mpeg".format(
+                    FULL_CAPUTRING_PATH[1:], datetime.datetime.now())
+
+        start_as_thread(filename, crop)
+
+        return HttpSuccess({'filename': filename})
+
     return HttpFailed()
 
 
 def stop_stream(request):
-    if cc.is_camera_present():
-        cc.stop_livestream()
-        return HttpSuccess()
-    return HttpFailed()
+    cc.stop_livestream()
+    return HttpSuccess()
