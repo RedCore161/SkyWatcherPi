@@ -1,6 +1,8 @@
 
 const MAX_UI_MODE = true;
 
+var animation = {};
+
 
 //See: http://bootstrap-notify.remabledesigns.com/
 function showSuccess(txt, _delay=2500) {

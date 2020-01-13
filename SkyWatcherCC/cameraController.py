@@ -7,6 +7,7 @@ from SkyWatcherCC.settings import MOCK_CAMERA
 # ---- U N I X - S H E L L ----------------------------------------------------------
 # -----------------------------------------------------------------------------------
 
+
 def find_process(process_name):
     """
     Looks for a running unix-process with the given name

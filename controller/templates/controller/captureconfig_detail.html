@@ -76,8 +76,11 @@
             return $('#repeatsDetail').data('href');
         }
 
-        function captureImage(durration, repeats) {
-            var runCounter = 0;
+        function captureImage(durration, repeats=0) {
+            if (repeats > 0) {
+                $('#repeatCounter').data('size', repeats);
+            }
+
             var configId = $('.list-group-item.active').data('id');
 			if (configId != undefined) {
 			    var url = "{% url 'capture_image_with_config' config_id=0 %}".replace('0', configId);
@@ -87,18 +90,27 @@
                     data: {
                         'csrfmiddlewaretoken': '{{ csrf_token }}'
                     },
+
                     beforeSend : function (data) {
-                        startAnimation(durration, repeats);
+                        increaseRepeatInfo();
+                        startAnimation(durration);
                     },
+
                     success: function (data) {
+                        cancelProgress();
+
                         if (durration > MIN_DURRATION) {
                             showSuccess("Successfully captured Image");
                         }
-                        updateRepeatInfo();
-                        if (!isConfigDone()){
-                            captureImage(durration, repeats);
+
+                        if (isConfigDone()){
+                            onProgressDone();
+                            resetRepeatInfo();
+                        } else {
+                            captureImage(durration);
                         }
                     },
+
                     error: function () {
                         showError("Error on capturing Image!");
                         cancelProgress();
@@ -106,6 +118,30 @@
                 });
 			}
         }
+
+        function increaseRepeatInfo() {
+            var $this = $('#repeatCounter');
+            var current = $this.data('offset');
+            var repeats = $this.data('size');
+            current++;
+            $this.data('offset', current);
+            $this.text(current+" / "+repeats);
+        }
+
+        function resetRepeatInfo() {
+            var $this = $('#repeatCounter');
+            $this.data('offset', 0);
+            $this.data('size', 0);
+        }
+
+		function isConfigDone() {
+            var $this = $('#repeatCounter');
+            var current = $this.data('offset');
+            var repeats = $this.data('size');
+			return current >= repeats;
+		}
+
+		//============================================================
 
 		$(function() {
 
@@ -120,6 +156,7 @@
 			$('#btnCancel').click(function(){
 				var configId = $('.list-group-item.active').data('id');
 				if (configId != undefined) {
+				    //TODO
 				}
 				console.log("btnCancel");
 			});

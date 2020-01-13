@@ -13,9 +13,8 @@
 {% block javascript %}
     <script language="JavaScript">
 
-		var animation = Object();
-
         const MIN_DURRATION = 1000;
+        const RESPONSE_WAIT = 250;
 
 		const states = {
 		  READY: 0,
@@ -23,44 +22,63 @@
 		  DONE: 2
 		};
 
-		function startAnimation(durration, repeats) {
-		    console.log("startAnimation: "+durration + " | "+repeats);
+		function startAnimation(durration) {
+		    console.log("startAnimation: "+durration);
 
 			if (durration > MIN_DURRATION) {
+
+			    var now = new Date();
+                animation.endTime = now.getTime() + durration - RESPONSE_WAIT;
+                animation.durration = durration;
+
                 animation.waiter = setTimeout(function(){
+                    setProgressStatus(states['RUNNING']);
+
                     disableAllLinks();
                     $('.customCaptureBtn').toggleClass("disabled");
 
-                    var now = new Date();
-                    animation.endTime = now.getTime() + durration;
-                    animation.durration = durration;
-                    animation.repeats = repeats;
-
-                    setProgressStatus(states['RUNNING']);
-
                     animateUpdate();
 
-                }, 500);
+                }, RESPONSE_WAIT);
+
 			} else {
 			    animation.waiter = setTimeout(function(){
                     setProgressStatus(states['RUNNING']);
-                }, 500);
+                }, RESPONSE_WAIT);
 			}
 		}
 
-		function cancelProgress() {
-		    clearTimeout(animation.waiter);
-		    animation = Object();
+		function animateUpdate() {
+			if (animation.isRunning) {
+				var now = new Date();
+				var timeLeft = animation.endTime - now.getTime() ;
+				var progress = ((animation.durration - timeLeft) / animation.durration) * 100;
+
+				if (progress <= 100) {
+					updateProgress(progress);
+					setTimeout(animateUpdate, 100);
+				} else {
+					updateProgress(100);
+				}
+			}
 		}
 
-		function isConfigDone() {
-			return animation.current >= animation.repeats;
+		function onProgressDone() {
+			setProgressStatus(states['DONE']);
+			setTimeout(resetAnimation, 100);
+		}
+
+		function cancelProgress() {
+			console.log("cancelProgress()");
+		    clearTimeout(animation.waiter);
+		    animation = {};
 		}
 
 		function resetAnimation() {
+			console.log("resetAnimation()");
 
 			//Reset everything
-			animation = Object();
+			animation = {};
 
             enableAllLinks();
 
@@ -72,12 +90,6 @@
 
 		}
 
-		function onProgressDone() {
-			setProgressStatus(states['DONE']);
-			updateProgress(100)
-			setTimeout(resetAnimation, 1000);
-		}
-
 		function setProgressStatus(status) {
 			switch (status) {
 				case states['READY']:
@@ -86,6 +98,7 @@
 
 			  	case states['RUNNING']:
 					$('#configStatus').text("Status: RUNNING");
+					animation.isRunning = true;
 					break;
 
 			  	case states['DONE']:
@@ -94,35 +107,16 @@
 			}
 		}
 
-        function updateRepeatInfo() {
-            var current = $('#repeatCounter').data('offset');
-            current++;
-            $('#repeatCounter').data('offset', current);
-            $('#repeatCounter').text(current+" / "+animation.repeats);
-        }
 
 		function updateProgress(progress) {
 			$('.progress-bar').css("width", progress + "%");
 			$('.progress-bar').text(Math.round(progress) + "%");
 		}
 
-		function animateUpdate() {
-			var now = new Date();
-			var timeLeft = animation.endTime - now.getTime() ;
-			var progress = ((animation.durration - timeLeft) / animation.durration) * 100;
-
-			if (progress <= 100) {
-				updateProgress(progress);
-				setTimeout(animateUpdate, 100);
-			} else {
-				onProgressDone();
-			}
-		}
 
 		//============================================================
 
 		setProgressStatus(states['READY']);
-
 
 
     </script>

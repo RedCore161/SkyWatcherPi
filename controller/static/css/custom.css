@@ -71,6 +71,7 @@ textarea {
   resize: none;
 }
 
+
 [placeholder]::-webkit-input-placeholder { color: rgba(255,255,255,.8); }
 [placeholder]:hover::-webkit-input-placeholder { color: rgba(255,255,255,.4); }
 [placeholder]:focus::-webkit-input-placeholder { color: transparent; }
@@ -87,7 +88,7 @@ textarea {
 input {
   margin: 0 0 20px;
   padding: 8px 12px 10px 12px;
-  border: 1px solid rgba(0,0,0,.5);
+  border: 1px solid rgba(255, 255, 255, .5);
   background: rgba(46, 45, 43,1);
 }
 
@@ -264,7 +265,6 @@ img.d-block {
     border: 1px solid rgba(206,206,206,.5) !important;
 }
 
-
 #streamViewholder {
     overflow: hidden;
     position: relative;
@@ -275,4 +275,9 @@ img.d-block {
 #focusFrame {
     position: absolute;
     border: beige 1px solid;
+}
+
+button.btnCreateFlow {
+    margin: 20px 0px 20px 30px;
+    padding: 6px 20px 6px 20px;
 }

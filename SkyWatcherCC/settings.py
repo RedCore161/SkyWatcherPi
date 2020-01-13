@@ -31,8 +31,8 @@ DEBUG = CONFIG["DEBUG"]
 
 ALLOWED_HOSTS = CONFIG["HOSTS"]
 
-#MOCK_CAMERA = CONFIG["MOCK_CAMERA"]
-MOCK_CAMERA = False
+MOCK_CAMERA = CONFIG["MOCK_CAMERA"]
+#MOCK_CAMERA = False
 
 # Application definition
 
@@ -51,7 +51,6 @@ INSTALLED_APPS = [
     'rest_auth.registration',
 
     'controller',
-    #'mod_wsgi.server'
 ]
 
 MIDDLEWARE = [
@@ -162,6 +161,8 @@ STATICFILES_DIRS = [
 
 MEDIA_URL = "/media/"
 MEDIA_PATH = "media"
+MOCK_PATH_A = "/controller/static/mocking/"
+MOCK_PATH_B = "/static/mocking/"
 
 FULL_CAPUTRING_PATH = "/media/full/"
 THUMBNAIL_PATH = "media/thumbnails/"

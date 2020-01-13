@@ -2,7 +2,6 @@ import datetime
 import ntpath
 import os
 import time
-from threading import Thread
 
 import cv2
 from django.core.exceptions import ObjectDoesNotExist
@@ -12,10 +11,12 @@ from django.views.generic import DetailView
 from django.views.generic.list import ListView
 
 import SkyWatcherCC.cameraController as cc
-from SkyWatcherCC.settings import FULL_CAPUTRING_PATH, THUMBNAIL_PATH, MOCK_CAMERA
+from SkyWatcherCC.settings import FULL_CAPUTRING_PATH, MOCK_CAMERA, THUMBNAIL_PATH, MOCK_PATH_A, MOCK_PATH_B
 from SkyWatcherCC.views import HttpSuccess, HttpFailed
 from controller.forms import CaptureConfigForm, CaptureFlow
 from controller.models import ConfigMapping, ImageFile, CaptureConfig
+from controller.helper import start_as_thread
+from threading import Thread
 
 
 def start_new_thread(func):
@@ -64,34 +65,29 @@ def capture(request, config_id=None):
         image_format = request.POST.get("image_format")
 
     if cc.is_camera_present():
-        print("Capturing START!", time.time(), bulb_time)
+        print("Capturing START!", time.time(), bulb_time, config_id)
         if cc.capture_image(path, filename, iso, aperture, exposure, image_format, bulb_time) == 0:
             print("Capturing DONE!", time.time())
             result = {'filepath': path + filename}
-            image = ImageFile()
-            if config:
-                image.config = config
-            image.create_as_full(filename, path, image_format)
-            image.save()
 
-            create_thumbnail(result['filepath'][1:])
+            save_image(config, filename, path, image_format, result['filepath'][1:])
 
             return HttpSuccess(result)
+
+    elif MOCK_CAMERA:
+        if bulb_time > 0:
+            time.sleep(bulb_time)
+        else:
+            time.sleep(float(exposure))
+
+        filename = "mock_image.png"
+        result = {'filepath': MOCK_PATH_A + filename}
+
+        save_image(config, filename, MOCK_PATH_B, image_format, result['filepath'][1:])
+
+        return HttpSuccess(result)
+
     return HttpFailed()
-
-
-@start_new_thread
-def create_thumbnail(filepath):
-    """
-    Creates a thumbnail as a background-task
-    :param filepath: path to the full image
-    """
-    os.makedirs(THUMBNAIL_PATH, exist_ok=True)
-
-    img = cv2.imread(filepath)
-    img = cv2.resize(img, (300, 200), interpolation=cv2.INTER_NEAREST)
-    cv2.imwrite('{}thumb_{}'.format(THUMBNAIL_PATH, ntpath.basename(filepath)), img)
-    print("Thumbnail created!")
 
 
 # -----------------------------------------------------------------------------------
@@ -311,8 +307,8 @@ def restart_gphoto(request):
 # ---- S T R E A M ------------------------------------------------------------------
 # -----------------------------------------------------------------------------------
 
-@start_new_thread
-def start_as_thread(filename="", crop=""):
+@start_as_thread
+def start_livestream(filename="", crop=""):
     cc.start_livestream(filename, crop)
 
 
@@ -339,7 +335,7 @@ def start_stream(request):
                 filename = "{0}/stream_{1:%Y-%m-%d_%H-%M-%S}.mpeg".format(
                     FULL_CAPUTRING_PATH[1:], datetime.datetime.now())
 
-        start_as_thread(filename, crop)
+        start_livestream(filename, crop)
 
         return HttpSuccess({'filename': filename})
 
@@ -349,3 +345,34 @@ def start_stream(request):
 def stop_stream(request):
     cc.stop_livestream()
     return HttpSuccess()
+
+
+# -----------------------------------------------------------------------------------
+# ---- S A V I N G ------------------------------------------------------------------
+# -----------------------------------------------------------------------------------
+
+
+def save_image(config, filename, path, image_format, filepath):
+    image = ImageFile()
+    if config:
+        image.config = config
+    image.create_as_full(filename, path, image_format)
+    image.save()
+
+    create_thumbnail(filepath)
+
+
+@start_as_thread
+def create_thumbnail(filepath):
+    """
+    Creates a thumbnail as a background-task
+    :param filepath: path to the full image
+    """
+    os.makedirs(THUMBNAIL_PATH, exist_ok=True)
+    try:
+        img = cv2.imread(filepath)
+        img = cv2.resize(img, (300, 200), interpolation=cv2.INTER_NEAREST)
+        cv2.imwrite('{}thumb_{}'.format(THUMBNAIL_PATH, ntpath.basename(filepath)), img)
+        print("Thumbnail created!")
+    except:
+        print("Thumbnail FAILED ", filepath, os.getcwd())

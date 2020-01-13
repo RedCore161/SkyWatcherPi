@@ -10,8 +10,8 @@
 			<div class="col-3">
 				{% include 'dummies/dummy_panel_open.html' with title="FLOWS" %}
 
-					<input type="text" id="flowName" />
-					<button class="btn btn-lg" onclick="createFlow()">Add</button>
+					<input class="customTextInput" type="text" id="flowName" />
+					<button class="btn btn-lg btn-success btnCreateFlow" onclick="createFlow()">Add</button>
 					{% if list_flows %}
 						{% csrf_token %}
 						<div class="list-group overflow-auto scrollable">
