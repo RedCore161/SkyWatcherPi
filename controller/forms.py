@@ -35,3 +35,27 @@ class CaptureConfigForm(forms.Form):
                 form.base_fields[key].initial = value
 
         return form
+
+
+class VideoConfigForm(forms.Form):
+    """
+    form to handle a video-configuration
+    """
+
+    iso = forms.ChoiceField(choices=ISOS, label="Iso", widget=forms.Select(), required=True)
+    aperture = forms.ChoiceField(choices=APERTURES, label="Aperture", widget=forms.Select(), required=True)
+
+    def __init__(self, *args, **kwargs):
+
+        super(VideoConfigForm, self).__init__(*args, **kwargs)
+        self.fields['iso'].widget.attrs['style'] = 'width:80px;'
+        self.fields['aperture'].widget.attrs['style'] = 'width:80px;'
+
+    def get_form(self, **kwargs):
+        form = VideoConfigForm()
+
+        if kwargs is not None:
+            for key, value in kwargs.items():
+                form.base_fields[key].initial = value
+
+        return form

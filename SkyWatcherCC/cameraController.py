@@ -92,21 +92,24 @@ def is_camera_present():
 # ---- C A M E R A - A C T I O N S --------------------------------------------------
 # -----------------------------------------------------------------------------------
 
-def start_livestream(filename, crop):
+def start_livestream(iso, aperture, filename, crop):
     """
     Forwards camera-livestrem to */dev/video2*
+    :param aperture: /
+    :param iso: /
     :param filename: name of the video which will be recorded in tmp-folder
     :param crop: ffmpeg-crop-command => See: https://video.stackexchange.com/questions/4563/how-can-i-crop-a-video-with-ffmpeg
 
     """
     if not is_process_running("ffmpeg"):
         if MOCK_CAMERA:
-            subprocess.run("ffmpeg -hide_banner -f video4linux2 -i /dev/video0 -s 960:480 -vcodec rawvideo \
-                            -pix_fmt yuv420p -threads 0 -r 25 -f v4l2 /dev/video2 {} {}".format(crop, filename),
+            subprocess.run("ffmpeg -hide_banner -f video4linux2 -i /dev/video0 -s 960:480 -vcodec rawvideo" +
+                           " -pix_fmt yuv420p -threads 0 -r 25 -f v4l2 /dev/video2 {} {}".format(crop, filename),
                            shell=True, check=True)
         else:
-            subprocess.run("gphoto2 --stdout --capture-movie | ffmpeg -hide_banner -i - -vcodec rawvideo \
-                            -pix_fmt yuv420p -threads 0 -r 25 -f v4l2 /dev/video2 {} {}".format(crop, filename),
+            subprocess.run("gphoto2 --stdout --set-config iso={} --set-config aperture={} --capture-movie" +
+                           " | ffmpeg -hide_banner -i - -vcodec rawvideo -pix_fmt yuv420p" +
+                           " -threads 0 -r 25 -f v4l2 /dev/video2 {} {}".format(iso, aperture, crop, filename),
                            shell=True, check=True)
 
 

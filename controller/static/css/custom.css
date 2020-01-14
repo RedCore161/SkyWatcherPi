@@ -281,3 +281,11 @@ button.btnCreateFlow {
     margin: 20px 0px 20px 30px;
     padding: 6px 20px 6px 20px;
 }
+
+.notransition {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  -ms-transition: none !important;
+  transition: none !important;
+}

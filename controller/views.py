@@ -13,7 +13,7 @@ from django.views.generic.list import ListView
 import SkyWatcherCC.cameraController as cc
 from SkyWatcherCC.settings import FULL_CAPUTRING_PATH, MOCK_CAMERA, THUMBNAIL_PATH, MOCK_PATH_A, MOCK_PATH_B
 from SkyWatcherCC.views import HttpSuccess, HttpFailed
-from controller.forms import CaptureConfigForm, CaptureFlow
+from controller.forms import CaptureConfigForm, CaptureFlow, VideoConfigForm
 from controller.models import ConfigMapping, ImageFile, CaptureConfig
 from controller.helper import start_as_thread
 from threading import Thread
@@ -292,6 +292,17 @@ def create_config(request):
     return render(request, 'controller/create_config.html', {'form': form})
 
 
+def live_stream(request):
+
+    # If camera is present, fetch the current settings, otherwise set default values
+    fetch = cc.is_camera_present()
+
+    form = VideoConfigForm().get_form(iso=cc.get_iso(fetch),
+                                      aperture=cc.get_aperture(fetch))
+
+    return render(request, 'controller/live_stream.html', {'form': form})
+
+
 # -----------------------------------------------------------------------------------
 # ---- XXXXXXXXX --------------------------------------------------------------------
 # -----------------------------------------------------------------------------------
@@ -308,8 +319,8 @@ def restart_gphoto(request):
 # -----------------------------------------------------------------------------------
 
 @start_as_thread
-def start_livestream(filename="", crop=""):
-    cc.start_livestream(filename, crop)
+def start_livestream(iso, aperture, filename='', crop=''):
+    cc.start_livestream(iso, aperture, filename, crop)
 
 
 def start_stream(request):
@@ -320,22 +331,26 @@ def start_stream(request):
                               otherwise in MPEG
     :return:
     """
+    os.makedirs(FULL_CAPUTRING_PATH[1:], exist_ok=True)
+
     if MOCK_CAMERA or cc.is_camera_present():
         crop = request.GET.get('crop')
         record = request.GET.get('record')
+        iso = request.GET.get('iso')
+        aperture = request.GET.get('aperture')
         filename = ""
-        print("start_stream", crop, record)
+        print("start_stream", crop, record, iso, aperture)
 
         if record:
             cc.stop_livestream()
             if crop:
-                filename = "{0}/stream_{1:%Y-%m-%d_%H-%M-%S}.mkv".format(
+                filename = "{0}stream_{1:%Y-%m-%d_%H-%M-%S}.mkv".format(
                     FULL_CAPUTRING_PATH[1:], datetime.datetime.now())
             else:
-                filename = "{0}/stream_{1:%Y-%m-%d_%H-%M-%S}.mpeg".format(
+                filename = "{0}stream_{1:%Y-%m-%d_%H-%M-%S}.mpeg".format(
                     FULL_CAPUTRING_PATH[1:], datetime.datetime.now())
 
-        start_livestream(filename, crop)
+        start_livestream(iso, aperture, filename, crop)
 
         return HttpSuccess({'filename': filename})
 

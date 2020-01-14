@@ -72,6 +72,7 @@
 			console.log("cancelProgress()");
 		    clearTimeout(animation.waiter);
 		    animation = {};
+		    updateProgress(0);
 		}
 
 		function resetAnimation() {
@@ -109,8 +110,14 @@
 
 
 		function updateProgress(progress) {
-			$('.progress-bar').css("width", progress + "%");
-			$('.progress-bar').text(Math.round(progress) + "%");
+			if (progress > 0) {
+				$('.progress-bar').css("width", progress + "%");
+				$('.progress-bar').text(Math.round(progress) + "%");
+			} else {
+				$(".progress-bar").addClass("notransition");
+				$('.progress-bar').attr('style', "width: 0%");
+				$(".progress-bar").removeClass("notransition");
+			}
 		}
 
 

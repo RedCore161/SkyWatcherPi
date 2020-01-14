@@ -8,7 +8,6 @@ from controller import views
 urlpatterns = [
 
     url(r'^index', TemplateView.as_view(template_name='controller/index.html'), name='index'),
-    url(r'^livestream', TemplateView.as_view(template_name='controller/live_stream.html'), name='live_stream'),
 
 
     url(r'^captureflow/CREATE', views.create_flow, name='create_flow'),
@@ -36,6 +35,8 @@ urlpatterns = [
 
     url(r'^captureconfig/(?P<pk>\d+)/GALLERY', views.ConfigGalleryView.as_view(), name='load_gallery'),
     url(r'^runconfig/(?P<pk>\d+)/PERFORM', views.ConfigGalleryView.as_view(), name='perform_config'),
+
+    url(r'^livestream', views.live_stream, name='live_stream'),
 
     url(r'^ajax/captureimage/(?P<config_id>\d+)/WITHCONFIG', views.capture, name='capture_image_with_config'),
     url(r'^ajax/captureimage', views.capture, name='capture_image'),
