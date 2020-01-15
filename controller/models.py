@@ -86,15 +86,17 @@ class ImageFile(models.Model):
     date = models.DateTimeField(auto_now_add=True, blank=True)
     config = models.ForeignKey(CaptureConfig, on_delete=models.CASCADE, null=True)
     type = models.CharField(max_length=100, null=True, choices=IMAGE_TYPES)
+    description = models.CharField(max_length=200, null=True)
 
     def create_as_preview(self, filename):
         self.filename = filename
         self.type = IMAGE_TYPES[0][0][0]
 
-    def create_as_full(self, filename, path, _type):
+    def create_as_full(self, filename, path, _type, description):
         self.filename = filename
         self.path = path
         self.type = _type
+        self.description = description
 
     def __str__(self):
         if SHOW_IDS:

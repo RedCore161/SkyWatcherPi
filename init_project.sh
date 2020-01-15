@@ -83,9 +83,8 @@ run_cmd "pip3 install opencv-contrib-python==4.1.0.25 django-rest-auth djangores
 
 
 printf "[Info] Deactivate canon-automount..."
-printf "ATTRS{idVendor}=='04a9', ATTRS{idProduct}=='32cc', RUN+='${UNMOUNT_CAMERA}'" > /etc/udev/rules.d/canon.rules
 #printf "TODO" > ${UNMOUNT_CAMERA}
-chmod 755 ${UNMOUNT_CAMERA}
+#chmod 755 ${UNMOUNT_CAMERA}
 
 run_cmd "TODO"
 

@@ -8,10 +8,12 @@
             {% include 'dummies/dummy_panel_open.html' with title="Video-Capture-Config" %}
 
                 <div class="customBtnHolder">
+                    <!--
                     <form id="formVideoConfig" method="POST">
                         {% csrf_token %}
                         {{ form.as_p }}
                     </form>
+                    -->
                     <button class="btn btn-lg btn-primary customCaptureBtn customBtnSize" data-size="100">100%</button>
                     <button class="btn btn-lg btn-primary customCaptureBtn customBtnSize" data-size="75">75%</button>
                     <button class="btn btn-lg btn-primary customCaptureBtn customBtnSize" data-size="50">50%</button>
@@ -63,17 +65,15 @@
 
         //============================================================
 
-        window.onload = function(e) {
-            startLiveStream();
-        }
-
 
         window.addEventListener('beforeunload', function (e) {
           // Cancel the event
-          e.preventDefault();
+          if ($("#streamViewholder img").length > 0) {
+              e.preventDefault();
 
-          console.log("stopLiveStream()");
-          stopLiveStream();
+              console.log("stopLiveStream()");
+              stopLiveStream();
+          }
 
           return undefined;
         });
@@ -89,19 +89,24 @@
         $("#btnCaptureVideo").click(function(e) {
 
             $this = $('#focusFrame');
+            $selected = $(".customBtnSize.active");
 
-            var pos = $this.position();
-            var w = $this.width();
-            var h = $this.height();
+            if ($selected.length > 0) {
+                var pos = $this.position();
+                var w = $this.width();
+                var h = $this.height();
 
-            var crop = '-vf crop=w='+w+':h='+h+':x='+pos["left"]+':y='+pos["top"];
+                var crop = '-vf crop=w='+w+':h='+h+':x='+pos["left"]+':y='+pos["top"];
 
-            // For 100%, we don't need to crop
-            if ($(".customBtnSize.active").data('size') == 100) {
-                crop = ' ';
+                // For 100%, we don't need to crop
+                if ($selected.data('size') == 100) {
+                    crop = ' ';
+                }
+
+                startLiveStream(true, crop);
+            } else {
+                startLiveStream();
             }
-
-            startLiveStream(true, crop);
         });
 
         $("#btnCancelVideo").click(function(e) {
@@ -119,8 +124,8 @@
 					'csrfmiddlewaretoken': '{{ csrf_token }}',
 					'record': record,
 					'crop': crop,
-					'iso': $("#id_iso").val(),
-					'aperture': $("#id_aperture").val()
+					'iso': 0, //$("#id_iso").val(),
+					'aperture': 0, //$("#id_aperture").val()
 				},
                 success: function (data) {
                     console.log("Requested Liveview!");

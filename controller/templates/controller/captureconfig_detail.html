@@ -53,11 +53,12 @@
 		{% include 'dummies/dummy_panel_close.html' %}
     </div>
 
-    <div class="col-3">
-        {% include 'dummies/dummy_panel_open.html' with title="DUMMY" %}
-
-         || DUMMY ||
-
+    <div class="col-4">
+        {% include 'dummies/dummy_panel_open.html' with title="Description" %}
+            <form id="formSimpleName" method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+            </form>
         {% include 'dummies/dummy_panel_close.html' %}
 
     </div>
@@ -88,7 +89,8 @@
                     type: "POST",
                     url: url,
                     data: {
-                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'description': $("#id_description").val()
                     },
 
                     beforeSend : function (data) {

@@ -13,7 +13,7 @@ from django.views.generic.list import ListView
 import SkyWatcherCC.cameraController as cc
 from SkyWatcherCC.settings import FULL_CAPUTRING_PATH, MOCK_CAMERA, THUMBNAIL_PATH, MOCK_PATH_A, MOCK_PATH_B
 from SkyWatcherCC.views import HttpSuccess, HttpFailed
-from controller.forms import CaptureConfigForm, CaptureFlow, VideoConfigForm
+from controller.forms import CaptureConfigForm, CaptureFlow, VideoConfigForm, SimpleDescForm
 from controller.models import ConfigMapping, ImageFile, CaptureConfig
 from controller.helper import start_as_thread
 from threading import Thread
@@ -64,18 +64,20 @@ def capture(request, config_id=None):
         bulb_time = request.POST.get("bulb_time")
         image_format = request.POST.get("image_format")
 
+    description = request.POST.get("description")
+
     if cc.is_camera_present():
         print("Capturing START!", time.time(), bulb_time, config_id)
         if cc.capture_image(path, filename, iso, aperture, exposure, image_format, bulb_time) == 0:
             print("Capturing DONE!", time.time())
             result = {'filepath': path + filename}
 
-            save_image(config, filename, path, image_format, result['filepath'][1:])
+            save_image(config, filename, path, image_format, result['filepath'][1:], description)
 
             return HttpSuccess(result)
 
     elif MOCK_CAMERA:
-        if bulb_time > 0:
+        if str(bulb_time) != '0':
             time.sleep(bulb_time)
         else:
             time.sleep(float(exposure))
@@ -83,7 +85,7 @@ def capture(request, config_id=None):
         filename = "mock_image.png"
         result = {'filepath': MOCK_PATH_A + filename}
 
-        save_image(config, filename, MOCK_PATH_B, image_format, result['filepath'][1:])
+        save_image(config, filename, MOCK_PATH_B, image_format, result['filepath'][1:], description)
 
         return HttpSuccess(result)
 
@@ -104,6 +106,7 @@ class CaptureConfigDetail(DetailView):
         context = super().get_context_data(**kwargs)
         mapping = ConfigMapping.objects.get(flow_id=self.request.GET.get('flow_id'), config_id=context['object'])
         context['repeats'] = mapping.repeats
+        context['form'] = SimpleDescForm()
         return context
 
 
@@ -367,11 +370,11 @@ def stop_stream(request):
 # -----------------------------------------------------------------------------------
 
 
-def save_image(config, filename, path, image_format, filepath):
+def save_image(config, filename, path, image_format, filepath, description=""):
     image = ImageFile()
     if config:
         image.config = config
-    image.create_as_full(filename, path, image_format)
+    image.create_as_full(filename, path, image_format, description)
     image.save()
 
     create_thumbnail(filepath)

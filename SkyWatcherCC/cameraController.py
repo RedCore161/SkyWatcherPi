@@ -95,8 +95,8 @@ def is_camera_present():
 def start_livestream(iso, aperture, filename, crop):
     """
     Forwards camera-livestrem to */dev/video2*
-    :param aperture: /
-    :param iso: /
+    :param aperture: not working yet - has to be set manually on camera
+    :param iso: not working yet - has to be set manually on camera
     :param filename: name of the video which will be recorded in tmp-folder
     :param crop: ffmpeg-crop-command => See: https://video.stackexchange.com/questions/4563/how-can-i-crop-a-video-with-ffmpeg
 
@@ -107,9 +107,13 @@ def start_livestream(iso, aperture, filename, crop):
                            " -pix_fmt yuv420p -threads 0 -r 25 -f v4l2 /dev/video2 {} {}".format(crop, filename),
                            shell=True, check=True)
         else:
-            subprocess.run("gphoto2 --stdout --set-config iso={} --set-config aperture={} --capture-movie" +
+
+            #subprocess.run("gphoto2 --set-config iso={} --set-config aperture={}".format(iso, aperture),
+            #               shell=True, check=True)
+
+            subprocess.run("gphoto2 --stdout --capture-movie" +
                            " | ffmpeg -hide_banner -i - -vcodec rawvideo -pix_fmt yuv420p" +
-                           " -threads 0 -r 25 -f v4l2 /dev/video2 {} {}".format(iso, aperture, crop, filename),
+                           " -threads 0 -r 25 -f v4l2 /dev/video2 {} {}".format(crop, filename),
                            shell=True, check=True)
 
 
