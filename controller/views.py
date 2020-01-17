@@ -46,7 +46,6 @@ def capture(request, config_id=None):
 
     config = None
 
-    filename = '{0:%Y-%m-%d_%H-%M-%S}.jpg'.format(datetime.datetime.now())
     path = '{0}{1:%Y-%m-%d}/'.format(FULL_CAPUTRING_PATH, datetime.datetime.now())
 
     if config_id:
@@ -68,7 +67,9 @@ def capture(request, config_id=None):
 
     if cc.is_camera_present():
         print("Capturing START!", time.time(), bulb_time, config_id)
-        if cc.capture_image(path, filename, iso, aperture, exposure, image_format, bulb_time) == 0:
+        success, filename = cc.capture_image(path, iso, aperture, exposure, image_format, bulb_time, description)
+        print("Filename ", filename)
+        if success:
             print("Capturing DONE!", time.time())
             result = {'filepath': path + filename}
 
@@ -107,6 +108,9 @@ class CaptureConfigDetail(DetailView):
         mapping = ConfigMapping.objects.get(flow_id=self.request.GET.get('flow_id'), config_id=context['object'])
         context['repeats'] = mapping.repeats
         context['form'] = SimpleDescForm()
+        #context['test'] = self.model.iso
+        #context['test2'] = self.model.get_iso_display()
+        print("CCC", context)
         return context
 
 
@@ -287,10 +291,11 @@ def create_config(request):
     # If camera is present, fetch the current settings, otherwise set default values
     fetch = cc.is_camera_present()
 
-    form = CaptureConfigForm().get_form(iso=cc.get_iso(fetch),
-                                        aperture=cc.get_aperture(fetch),
-                                        exposure=cc.get_exposure(fetch),
-                                        image_format=cc.get_image_format(fetch))
+    form = CaptureConfigForm(initial={'iso': cc.get_iso(fetch),
+                                      'aperture': cc.get_aperture(fetch),
+                                      'exposure': cc.get_exposure(fetch),
+                                      'image_format': cc.get_image_format(fetch)
+                                      })
 
     return render(request, 'controller/create_config.html', {'form': form})
 
@@ -300,8 +305,9 @@ def live_stream(request):
     # If camera is present, fetch the current settings, otherwise set default values
     fetch = cc.is_camera_present()
 
-    form = VideoConfigForm().get_form(iso=cc.get_iso(fetch),
-                                      aperture=cc.get_aperture(fetch))
+    form = VideoConfigForm(initial={'iso': cc.get_iso(fetch),
+                                    'aperture': cc.get_aperture(fetch)
+                                    })
 
     return render(request, 'controller/live_stream.html', {'form': form})
 

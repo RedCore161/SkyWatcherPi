@@ -50,7 +50,6 @@
             //============================================================
             // See: https://github.com/jquery-form/form
 
-
             $('#btnCreateConfig').click(function(e) {
                 e.preventDefault();
                 $.ajax({
@@ -59,7 +58,8 @@
                     data: $('#formCreateConfig').serialize(),
         			dataType: "json",
                     success: function (data) {
-                        $('#formCreateConfig').resetForm();
+                        //$('#formCreateConfig').resetForm();
+                        $("#id_description").val("");
                         showSuccess("Config has been saved!");
                     },
                     error: function() {

@@ -1,26 +1,25 @@
 from django.db import models
 
 
-APERTURES = [('4', '4'), ('4.5', '4.5'), ('5', '5'), ('5.6', '5.6'), ('6.3', '6.3'), ('7.1', '7.1'), ('8', '8'),
-             ('9', '9'), ('10', '10'), ('11', '11'), ('13', '13'), ('14', '14'), ('16', '16'), ('18', '18'),
-             ('20', '20'), ('22', '22')]
+APERTURES = [('0', '4'), ('1', '4.5'), ('2', '5'), ('3', '5.6'), ('4', '6.3'), ('5', '7.1'), ('6', '8'),
+             ('7', '9'), ('8', '10'), ('9', '11'), ('10', '13'), ('11', '14'), ('12', '16'), ('13', '18'),
+             ('14', '20'), ('15', '22')]
 
-EXPOSURES = [('30', '30'), ('25', '25'), ('20', '20'), ('15', '15'), ('13', '13'), ('10', '10'), ('8', '8'), ('6', '6'),
-             ('5', '5'), ('4', '4'), ('3.2', '3.2'), ('2.5', '2.5'), ('2', '2'), ('1.6', '1.6'), ('1.3', '1.3'),
-             ('1', '1'), ('0.8', '0.8'), ('0.6', '0.6'), ('0.5', '0.5'), ('0.4', '0.4'), ('0.3', '0.3'), ('1/4', '1/4'),
-             ('1/5', '1/5'), ('1/6', '1/6'), ('1/8', '1/8'), ('1/10', '1/10'), ('1/13', '1/13'), ('1/15', '1/15'),
-             ('1/20', '1/20'), ('1/25', '1/25'), ('1/30', '1/30'), ('1/40', '1/40'), ('1/50', '1/50'), ('1/60', '1/60'),
-             ('1/80', '1/80'), ('1/100', '1/100'), ('1/4000', '1/4000')]
+EXPOSURES = [('9', '5'), ('10', '4'), ('11', '3.2'), ('12', '2.5'), ('13', '2'), ('14', '1.6'), ('15', '1.3'),
+             ('16', '1'), ('17', '0.8'), ('18', '0.6'), ('19', '0.5'), ('20', '0.4'), ('21', '0.3'), ('22', '1/4'),
+             ('23', '1/5'), ('24', '1/6'), ('25', '1/8'), ('26', '1/10'), ('27', '1/13'), ('28', '1/15'),
+             ('29', '1/20'), ('30', '1/25'), ('31', '1/30'), ('32', '1/40'), ('33', '1/50'), ('34', '1/60'),
+             ('35', '1/80'), ('36', '1/100'), ('43', '1/500'), ('46', '1/1000')]
 
-ISOS = [('100', '100'), ('200', '200'), ('400', '400'), ('800', '800'), ('1600', '1600'), ('3200', '3200'),
-        ('6400', '6400'), ('12800', '12800'), ('25600', '25600')]
+ISOS = [('0', 'Auto'), ('1', '100'), ('2', '200'), ('3', '400'), ('4', '800'), ('5', '1600'), ('6', '3200'),
+        ('7', '6400'), ('8', '12800'), ('9', '25600')]
 
-FORMAT_TYPES = [('Large Fine JPEG', 'Large Fine JPEG'), ('Large Normal JPEG', 'Large Normal JPEG'),
-                ('Medium Fine JPEG', 'Medium Fine JPEG'), ('Medium Normal JPEG', 'Medium Normal JPEG'),
-                ('Small Fine JPEG', 'Small Fine JPEG'), ('Small Normal JPEG', 'Small Normal JPEG'),
-                ('Small JPEG', 'Small JPEG'), ('RAW + Large Fine JPEG ', 'RAW + Large Fine JPEG'), ('RAW  ', 'RAW')]
+FORMAT_TYPES = [('0', 'Large Fine JPEG'), ('1', 'Large Normal JPEG'),
+                ('2', 'Medium Fine JPEG'), ('3', 'Medium Normal JPEG'),
+                ('4', 'Small Fine JPEG'), ('5', 'Small Normal JPEG'),
+                ('6', 'Small JPEG'), ('7', 'RAW + Large Fine JPEG'), ('8', 'RAW')]
 
-IMAGE_TYPES = [('0', 'Preview'), ('1', 'Focus'), ('2', 'Full')]
+IMAGE_TYPES = [('0', 'Preview'), ('1', 'Focus'), ('2', 'Full'), ('3', 'Dark')]
 
 # Add Model-Ids to the name?
 SHOW_IDS = True
@@ -45,10 +44,22 @@ class CaptureConfig(models.Model):
     description = models.CharField(max_length=300, null=True)
 
     bulb_time = models.IntegerField(default=0)
-    exposure = models.CharField(max_length=6, null=True, choices=EXPOSURES, default=EXPOSURES[19][0])
-    aperture = models.CharField(max_length=3, null=False, choices=APERTURES, default=APERTURES[9][0])
-    iso = models.CharField(max_length=5, null=False, choices=ISOS)
-    image_format = models.CharField(max_length=25, null=False, choices=FORMAT_TYPES)
+    exposure = models.IntegerField(null=True, choices=EXPOSURES, default=EXPOSURES[19][0])
+    aperture = models.IntegerField(null=False, choices=APERTURES, default=APERTURES[9][0])
+    iso = models.IntegerField(null=False, choices=ISOS)
+    image_format = models.IntegerField(null=False, choices=FORMAT_TYPES)
+
+    def get_iso(self):
+        return ISOS[self.iso][1]
+
+    def get_aperture(self):
+        return APERTURES[self.aperture][1]
+
+    def get_exposure(self):
+        return EXPOSURES[self.exposure][1]
+
+    def get_image_format(self):
+        return FORMAT_TYPES[self.image_format][1]
 
     def __str__(self):
         _id = ''
@@ -56,8 +67,10 @@ class CaptureConfig(models.Model):
             _id = "[{}] ".format(self.pk)
 
         if self.bulb_time != 0:
-            return "{}{}(blub: {}s/ {} / iso: {})".format(_id, self.description, self.bulb_time, self.aperture, self.iso)
-        return "{}{}({}s/ {} / iso: {} )".format(_id, self.description, self.exposure, self.aperture, self.iso)
+            return "{}{}(blub: {}s/ {} / iso: {})".format(_id, self.description,
+                                                          self.bulb_time, self.get_aperture(), self.get_iso())
+        return "{}{}({}s/ {} / iso: {} )".format(_id, self.description, self.get_exposure(),
+                                                 self.get_aperture(), self.get_iso())
 
 
 class ConfigMapping(models.Model):

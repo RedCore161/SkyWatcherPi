@@ -14,23 +14,23 @@
                 {% if object.bulb_time > 0 %}
                     <div class="col">{{ object.bulb_time }}s (bulb)</div>
                 {% else %}
-                    <div class="col">{{ object.exposure }}s</div>
+                    <div class="col">{{ object.get_exposure }}s</div>
                 {% endif %}
             </div>
 
             <div class="row">
                 <div class="col font-weight-bold">Aperture:</div>
-                <div class="col">{{ object.aperture }}</div>
+                <div class="col">{{ object.get_aperture }}</div>
             </div>
 
             <div class="row">
                 <div class="col font-weight-bold">Iso:</div>
-                <div class="col">{{ object.iso }}</div>
+                <div class="col">{{ object.get_iso }}</div>
             </div>
 
             <div class="row">
                 <div class="col font-weight-bold">Format:</div>
-                <div class="col">{{ object.image_format }}</div>
+                <div class="col">{{ object.get_image_format }}</div>
             </div>
             <div class="row" id="repeatsDetail" data-href="{{ repeats }}">
                 <div class="col font-weight-bold">Repeats:</div>

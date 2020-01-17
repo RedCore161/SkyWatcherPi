@@ -1,6 +1,9 @@
 import os
 import signal
 import subprocess
+
+from django.utils.encoding import escape_uri_path
+
 from SkyWatcherCC.settings import MOCK_CAMERA
 
 # -----------------------------------------------------------------------------------
@@ -123,69 +126,92 @@ def stop_livestream():
     kill_process(b'ffmpeg')
 
 
-def capture_image(path, filename, iso, aperture, exposure, image_format, bulb_time=0):
+def _execute_capture(data, path):
+    try:
+        proc1 = subprocess.Popen(data, stdout=subprocess.PIPE)
+
+        output, err = proc1.communicate()
+        _list = output.decode("utf-8").split("\n")
+
+        for _out in _list:
+            start = _out.find(path)
+            if start > -1:
+                start = start + len(path)
+                return True, _out[start:]
+
+    except: #TODO
+        pass
+
+    return False, None
+
+
+def capture_image(path, iso, aperture, exposure, image_format, bulb_time=0, description=''):
     """
     Capture an image with the given parameter
     :param path: full-dirname to save the image
-    :param filename: name of the imagefile
     :param iso: /
     :param aperture: /
     :param exposure: INT in seconds
     :param image_format: /
     :param bulb_time: INT in seconds, if 0 => exposure will be used
+    :param description: optional description which will be put to the filename
     :return: UNIX 0 or 1
     """
 
-    # Build path without leading /
-    imagepath = path[1:]+filename
+    if len(description) > 0:
+        description = '_{}_'.format(escape_uri_path(description))
 
     if str(bulb_time) != '0':
-        return capture_image_bulb(imagepath, iso, aperture, bulb_time, image_format)
+        return capture_image_bulb(path, iso, aperture, image_format, bulb_time, description)
 
-    print("Capturing Image...", imagepath, iso, aperture, exposure, image_format, bulb_time)
+    print("Capturing Image...", iso, aperture, exposure, image_format, bulb_time)
 
-    return _execute_process(['gphoto2',
+    return _execute_capture(['gphoto2',
+                             '--set-config', 'capturetarget=1',  # Save RAW on SD-Card
                              '--set-config', 'whitebalance=8',   # Manuel
                              '--set-config', 'imageformat={}'.format(image_format),
                              '--set-config', 'shutterspeed={}'.format(exposure),
                              '--set-config', 'aperture={}'.format(aperture),
                              '--set-config', 'iso={}'.format(iso),
-                             '--filename', '{}'.format(imagepath),
+                             '--filename', "{}%Y-%m-%d_%H-%M-%S{}.%C".format(path[1:], description),
+                             '--keep-raw',
                              '--force-overwrite',
                              '--capture-image-and-download'
-                             ])
+                             ], path[1:])
 
 
-def capture_image_bulb(imagepath, iso, aperture, bulb_time, image_format):
+def capture_image_bulb(path, iso, aperture, image_format, bulb_time, description):
     """
     special capturing if bulb_time > 0
-    :param imagepath: full-imagepath
+    :param path: path to the image
     :param iso: /
     :param aperture: /
-    :param bulb_time: INT in seconds
     :param image_format: /
+    :param bulb_time: INT in seconds
+    :param description: optional description which will be put to the filename
     :return: UNIX 0 or 1
     """
-    print("Capturing Bulb-Image...", imagepath, iso, aperture, bulb_time, image_format)
+    print("Capturing Bulb-Image...", iso, aperture, bulb_time, image_format)
 
-    return _execute_process(['gphoto2',
+    return _execute_capture(['gphoto2',
+                             '--set-config', 'capturetarget=1',  # Save RAW on SD-Card
                              '--set-config', 'whitebalance=8',   # Manuel
                              '--set-config', 'imageformat={}'.format(image_format),
                              '--set-config', 'shutterspeed=bulb',
                              '--set-config', 'aperture={}'.format(aperture),
                              '--set-config', 'iso={}'.format(iso),
-                             '--filename', '{}'.format(imagepath),
+                             '--filename', "{}%Y-%m-%d_%H-%M-%S{}.%C".format(path[1:], description),
+                             '--keep-raw',
                              '--wait-event=1s',
                              '--set-config', 'eosremoterelease=5',
                              '--wait-event={}s'.format(bulb_time),
                              '--set-config', 'eosremoterelease=11',
                              '--wait-event-and-download=2s'
-                             ])
+                             ], path[1:])
 
 # -----------------------------------------------------------------------------------
 # ---- R E A D - C A M E R A - C O N F I G ------------------------------------------
 # -----------------------------------------------------------------------------------
-
 
 def get_certain_config(action):
     try:
@@ -222,7 +248,7 @@ def get_iso(cam_is_present):
         success, val = get_certain_config('/main/imgsettings/iso')
         if success:
             return val
-    return 200
+    return 2
 
 
 def get_aperture(cam_is_present):
@@ -230,7 +256,7 @@ def get_aperture(cam_is_present):
         success, val = get_certain_config('/main/capturesettings/aperture')
         if success:
             return val
-    return 5.6
+    return 3
 
 
 def get_exposure(cam_is_present):
@@ -238,7 +264,7 @@ def get_exposure(cam_is_present):
         success, val = get_certain_config('/main/capturesettings/shutterspeed')
         if success:
             return val
-    return 0.4
+    return 18
 
 
 def get_image_format(cam_is_present):
@@ -246,7 +272,7 @@ def get_image_format(cam_is_present):
         success, val = get_certain_config('/main/imgsettings/imageformatsd')
         if success:
             return val
-    return 'Large Normal JPEG'
+    return 0
 
 
 def get_auto_off():

@@ -39,15 +39,6 @@ class CaptureConfigForm(forms.Form):
         self.fields['bulb_time'].widget.attrs['style'] = 'width:80px;'
         self.fields['image_format'].widget.attrs['style'] = 'width:180px;'
 
-    def get_form(self, **kwargs):
-        form = CaptureConfigForm()
-
-        if kwargs is not None:
-            for key, value in kwargs.items():
-                form.base_fields[key].initial = value
-
-        return form
-
 
 class VideoConfigForm(forms.Form):
     """
@@ -61,12 +52,3 @@ class VideoConfigForm(forms.Form):
         super(VideoConfigForm, self).__init__(*args, **kwargs)
         self.fields['iso'].widget.attrs['style'] = 'width:80px;'
         self.fields['aperture'].widget.attrs['style'] = 'width:80px;'
-
-    def get_form(self, **kwargs):
-        form = VideoConfigForm()
-
-        if kwargs is not None:
-            for key, value in kwargs.items():
-                form.base_fields[key].initial = value
-
-        return form
