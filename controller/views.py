@@ -104,12 +104,12 @@ class CaptureConfigDetail(DetailView):
     model = CaptureConfig
 
     def get_context_data(self, **kwargs):
+        flow_id = self.request.GET.get('flow_id')
         context = super().get_context_data(**kwargs)
-        mapping = ConfigMapping.objects.get(flow_id=self.request.GET.get('flow_id'), config_id=context['object'])
+        mapping = ConfigMapping.objects.get(flow_id=flow_id, config_id=context['object'])
         context['repeats'] = mapping.repeats
         context['form'] = SimpleDescForm()
-        #context['test'] = self.model.iso
-        #context['test2'] = self.model.get_iso_display()
+        context['flow_id'] = flow_id
         print("CCC", context)
         return context
 

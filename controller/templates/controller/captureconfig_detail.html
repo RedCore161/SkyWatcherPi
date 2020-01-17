@@ -3,13 +3,12 @@
     <div class="col-4 config-detail-box">
         {% include 'dummies/dummy_panel_open.html' with title="Details" %}
         {% if object %}
-
             <div class="row" id="configDetail" data-id="{{ object.id }}">
                 <div class="col font-weight-bold">Description:</div>
                 <div class="col">{{ object.description }}</div>
             </div>
 
-            <div class="row" id="exposureDetail" data-href="{% if object.bulb_time > 0 %}{{ object.bulb_time }}{% else %}{{ object.exposure }}{% endif %}">
+            <div class="row" id="exposureDetail" data-href="{% if object.bulb_time > 0 %}{{ object.bulb_time }}{% else %}{{ object.get_exposure }}{% endif %}">
                 <div class="col font-weight-bold">Exposure:</div>
                 {% if object.bulb_time > 0 %}
                     <div class="col">{{ object.bulb_time }}s (bulb)</div>
@@ -32,9 +31,11 @@
                 <div class="col font-weight-bold">Format:</div>
                 <div class="col">{{ object.get_image_format }}</div>
             </div>
-            <div class="row" id="repeatsDetail" data-href="{{ repeats }}">
+            <div class="row">
                 <div class="col font-weight-bold">Repeats:</div>
-                <div class="col">{{ repeats }}</div>
+                <div class="col">
+                    <input class="form-control" type="number" id="dummyRepeats" min="1" maxlength="10" data-url="0" value="{{ repeats }}" />
+                </div>
             </div>
 
         {% else %}
@@ -74,7 +75,7 @@
         }
 
         function getRepeats() {
-            return $('#repeatsDetail').data('href');
+            return $("#dummyRepeats").val();
         }
 
         function captureImage(durration, repeats=0) {
@@ -161,6 +162,30 @@
 				    //TODO
 				}
 				console.log("btnCancel");
+			});
+
+
+
+			//SAVES THE VALUE AS REPEAT-COUNT VIA AJAX
+			$( "#dummyRepeats" ).change(function() {
+				console.log("OnChange()");
+				var $d = $(this);
+				var url = "{% url 'update_config_detail' pk=object.id %}"
+				$.ajax({
+					type: "GET",
+					url: url,
+					data: {
+						'csrfmiddlewaretoken': '{{ csrf_token }}',
+						'repeats': $d.val(),
+						'flow_id': {{ flow_id }}
+					},
+					success: function(result){
+						console.log("Successfully changed!");
+					},
+					error: function () {
+						console.error("Error on change");
+					}
+				});
 			});
 
 		});
